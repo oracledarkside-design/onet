@@ -2483,34 +2483,7 @@
       }
     }
 
-    function updateEventHandlers() {
-      const resetBtn = document.getElementById('reset');
-      const hintBtn = document.getElementById('hint');
-      
-      const newResetBtn = resetBtn.cloneNode(true);
-      const newHintBtn = hintBtn.cloneNode(true);
-      
-      resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
-      hintBtn.parentNode.replaceChild(newHintBtn, hintBtn);
-      
-      newResetBtn.addEventListener('click', () => {
-        game.reset();
-      });
-      
-      newHintBtn.addEventListener('click', () => {
-        if (game.state.locked) return;
-        if (performance.now() < game._hintCooldownUntil) return;
-        if (game.superHint) return;
-        const pair = game.computeHintPair();
-        if (!pair) {
-          game.checkAndReshuffleIfNoMoves();
-          return;
-        }
-        game.showSuperHint(pair);
-      });
-    }
 
-    updateEventHandlers();
 
     window.addEventListener('resize', () => {
       if (game) {
@@ -2821,6 +2794,7 @@
         }, 300);
       }, 3000);
     }
+
   </script>
   
 </body>
