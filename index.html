@@ -94,14 +94,14 @@
 
 
 
-    .cell.source { box-shadow: 0 0 0 3px rgba(255,255,255,.8), 0 8px 20px rgba(255,255,255,.15), inset 0 0 10px rgba(255,255,255,.15); z-index: 990;}
-    .cell.candidate { box-shadow: 0 0 0 3px rgba(130,200,255,.95), 0 10px 26px rgba(60,170,255,.25), inset 0 0 16px rgba(120,200,255,.25); z-index: 999;}
-    .cell.row-hl { box-shadow: 0 0 0 2px rgba(var(--hl),.6), 0 6px 18px rgba(var(--hl),.18), inset 0 0 0 rgba(0,0,0,0.0); }
-    .cell.col-hl { box-shadow: 0 0 0 2px rgba(var(--hl),.6), 0 6px 18px rgba(var(--hl),.18), inset 0 0 0 rgba(0,0,0,0.0); }
+    .cell.source { box-shadow: 0 0 0 1.25px rgba(255,255,255,.8), 0 8px 20px rgba(255,255,255,.15), inset 0 0 10px rgba(255,255,255,.15); z-index: 990;}
+    .cell.candidate { box-shadow: 0 0 0 1.25px rgba(130,200,255,.95), 0 10px 26px rgba(60,170,255,.25), inset 0 0 16px rgba(120,200,255,.25); z-index: 999;}
+    .cell.row-hl { box-shadow: 0 0 0 1.25px rgba(var(--hl),.6), 0 6px 18px rgba(var(--hl),.18), inset 0 0 0 rgba(0,0,0,0.0); }
+    .cell.col-hl { box-shadow: 0 0 0 1.25px rgba(var(--hl),.6), 0 6px 18px rgba(var(--hl),.18), inset 0 0 0 rgba(0,0,0,0.0); }
 
     .cell.filled.pulse-same { 
       background-color: rgba(var(--hl), .35) !important; 
-      box-shadow: 0 0 0 3px rgba(64,224,208,.95), 
+      box-shadow: 0 0 0 1.25px rgba(64,224,208,.95), 
                   0 10px 26px rgba(64,224,208,.25), 
                   inset 0 0 16px rgba(64,224,208,.25);
     }
@@ -194,7 +194,7 @@
 
     .cell.filled.hinted-super {
       background-color: rgba(255, 60, 60, .35) !important;
-      box-shadow: 0 0 0 3px rgba(255,80,80,.95), 0 10px 26px rgba(255,60,60,.25), inset 0 0 16px rgba(255,120,120,.25);
+      box-shadow: 0 0 0 1.25px rgba(255,80,80,.95), 0 10px 26px rgba(255,60,60,.25), inset 0 0 16px rgba(255,120,120,.25);
     }
 
     .overlay-message {
@@ -2339,11 +2339,11 @@
       }
 
       startHintCooldown() {
-        this._hintCooldownUntil = performance.now() + 3000;
+        this._hintCooldownUntil = performance.now() + 1;
         this.updateHintButtonState();
         setTimeout(() => {
           this.updateHintButtonState();
-        }, 3050);
+        }, 2);
       }
 
       clearSuperHint(skipBtnUpdate) {
@@ -2510,7 +2510,7 @@
         game.showSuperHint(pair);
 
         // Запуск кулдауна
-        const cooldownMs = 3000; // например 5 секунд
+        const cooldownMs = 5000; // например 5 секунд
         game._hintCooldownUntil = performance.now() + cooldownMs;
 
         newHintBtn.classList.add("cooldown");
