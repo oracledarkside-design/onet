@@ -2483,7 +2483,54 @@
       }
     }
 
+    function updateEventHandlers() {
+      const resetBtn = document.getElementById('reset');
+      const hintBtn = document.getElementById('hint');
 
+      const newResetBtn = resetBtn.cloneNode(true);
+      const newHintBtn = hintBtn.cloneNode(true);
+
+      resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
+      hintBtn.parentNode.replaceChild(newHintBtn, hintBtn);
+
+      newResetBtn.addEventListener('click', () => {
+        game.reset();
+      });
+
+      newHintBtn.addEventListener('click', () => {
+        if (game.state.locked) return;
+        if (performance.now() < game._hintCooldownUntil) return;
+        if (game.superHint) return;
+
+        const pair = game.computeHintPair();
+        if (!pair) {
+          game.checkAndReshuffleIfNoMoves();
+          return;
+        }
+        game.showSuperHint(pair);
+
+        // Запуск кулдауна
+        const cooldownMs = 3000; // например 5 секунд
+        game._hintCooldownUntil = performance.now() + cooldownMs;
+
+        newHintBtn.classList.add("cooldown");
+        newHintBtn.style.setProperty("--cooldown-time", cooldownMs + "ms");
+
+        // Принудительно перезапускаем анимацию
+        const cooldownLayer = newHintBtn;
+        cooldownLayer.style.animation = "none";
+        cooldownLayer.offsetHeight; // триггер reflow
+        cooldownLayer.style.animation = null;
+
+        // Убираем класс после окончания кулдауна
+        setTimeout(() => {
+          newHintBtn.classList.remove("cooldown");
+        }, cooldownMs);
+      });
+    }
+
+
+    updateEventHandlers();
 
     window.addEventListener('resize', () => {
       if (game) {
