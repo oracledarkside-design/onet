@@ -333,20 +333,20 @@
       :root { --cell: 44px; --gap: 6px; }
       body { padding:inherit; }
       .hud { flex-wrap: wrap; gap: 8px; padding-top: var(--board-padding);}
-      .settings-content {max-height: 90vh;}
+      .settings-content {max-height: 80vh;}
     }
     @media (max-width: 480px) {
       :root { --cell: 34px; --gap: 4px; }
       body { padding:inherit; }
       .hint { font-size: 12px; }
       .hud {padding-top: var(--board-padding);}
-      .settings-content {max-height: 90vh;}
+      .settings-content {max-height: 80vh;}
     }
     @media (max-width: 380px) {
       :root { --cell: 30px; --gap: 3px; }
       body { padding: inherit; }
       .hud {padding-top: var(--board-padding);}
-      .settings-content {max-height: 90vh;}
+      .settings-content {max-height: 80vh;}
     }
 
     .slider-container {
@@ -1016,10 +1016,15 @@
           thresholdPx: 8,
         };
         this._blockClicksUntil = 0;
-        this.board = this.generateBoard(); 
+        
+        // Пытаемся загрузить сохраненное состояние игры
+        if (!this.loadGameState()) {
+          this.board = this.generateBoard(); 
+        }
+        
         this.mount();
               
-      setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
+        setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
              
         this.bindHintButton();
       }
@@ -1056,6 +1061,11 @@
       updateTheme(newTheme) {
         this.currentTheme = newTheme;
         
+        // Очищаем сохраненное состояние при изменении темы
+        if (CONFIG.saveData) {
+          localStorage.removeItem('blockGameState');
+          console.log('Тема изменена, сохраненное состояние очищено');
+        }
       
         const themeConfig = AVAILABLE_THEMES[newTheme];
         if (themeConfig && themeConfig.themes && this.pinnedPaletteIndex >= 0) {
@@ -1067,7 +1077,9 @@
         }
         
         this.theme = this.getCurrentThemeColors();
-        this.maxColors = Math.min(this.maxColors, this.theme.length);
+        if (this.maxColors > this.theme.length) {
+          this.maxColors = this.theme.length;
+        }
         this.redrawAll();
       }
 
@@ -1081,6 +1093,12 @@
        
           this.pinnedPaletteIndex = paletteIndex;
           showMessage(`Палитра ${paletteIndex + 1} закреплена`, 'success');
+        }
+        
+        // Очищаем сохраненное состояние при изменении закрепленной палитры
+        if (CONFIG.saveData) {
+          localStorage.removeItem('blockGameState');
+          console.log('Закрепленная палитра изменена, сохраненное состояние очищено');
         }
         
         this.updateThemePreview();
@@ -1130,11 +1148,11 @@
           document.getElementById('settings-fullscreen').textContent = isFullscreen ? 'Включен' : 'Выключен';
         }
         
-        const saveDataSlider = document.getElementById('saveData-slider');
-        if (saveDataSlider) {
-          saveDataSlider.value = CONFIG.saveData ? 1 : 0;
-          document.getElementById('settings-saveData').textContent = CONFIG.saveData ? 'Включено' : 'Выключено';
-        }
+              // const saveDataSlider = document.getElementById('saveData-slider');
+      // if (saveDataSlider) {
+      //   saveDataSlider.value = CONFIG.saveData ? 1 : 0;
+      //   document.getElementById('settings-saveData').textContent = CONFIG.saveData ? 'Включено' : 'Выключено';
+      // }
         
         const themeSelector = document.getElementById('theme-selector');
         if (themeSelector) {
@@ -1261,6 +1279,13 @@
         setTimeout(() => {
           paletteContainer.remove();
           THEMES_CUSTOM.splice(paletteIndex, 1);
+          
+          // Очищаем сохраненное состояние при удалении пользовательской палитры
+          if (CONFIG.saveData) {
+            localStorage.removeItem('blockGameState');
+            console.log('Пользовательская палитра удалена, сохраненное состояние очищено');
+          }
+          
           this.updateThemePreview();
         }, 300);
       }
@@ -1964,6 +1989,9 @@
         this.animateCellRemoval(a);
         this.animateCellRemoval(b);
         
+        // Сохраняем состояние игры после каждого удаления блоков
+        this.saveGameState();
+        
         setTimeout(() => this.checkAndReshuffleIfNoMoves(), 400);
       }
 
@@ -1996,9 +2024,18 @@
       reset() {
         this.exitSelectionMode();
         this.clearSuperHint(true);
+        
+        // Очищаем сохраненное состояние при сбросе
+        if (CONFIG.saveData) {
+          localStorage.removeItem('blockGameState');
+          console.log('Игра сброшена, сохраненное состояние очищено');
+        }
+        
         const pinnedPaletteIndex = this.pinnedPaletteIndex;
         this.theme = this.getCurrentThemeColors();
-        this.maxColors = Math.min(this.maxColors, this.theme.length);
+        if (this.maxColors > this.theme.length) {
+          this.maxColors = this.theme.length;
+        }
         this.board = this.generateBoard();
         this.mount();
         setTimeout(() => this.centerAllBlocks(), 100);
@@ -2011,6 +2048,13 @@
       checkAndReshuffleIfNoMoves() {
         if (this._animatingReshuffle) return;
         if (this.hasAnyAvailablePair()) return;
+        
+        // Игра завершена - очищаем сохраненное состояние
+        if (CONFIG.saveData) {
+          localStorage.removeItem('blockGameState');
+          console.log('Игра завершена, сохраненное состояние очищено');
+        }
+        
         this.showNoMovesMessage();
         this.runWaveReshuffle();
       }
@@ -2442,6 +2486,64 @@
         }
       }
 
+      // Сохранение текущего состояния игры
+      saveGameState() {
+        if (!CONFIG.saveData) return;
+        
+        try {
+          const gameState = {
+            board: this.board,
+            pinnedPaletteIndex: this.pinnedPaletteIndex,
+            theme: this.theme,
+            currentTheme: this.currentTheme,
+            maxColors: this.maxColors,
+            minPair: this.minPair,
+            width: this.width,
+            height: this.height,
+            lastSaved: Date.now()
+          };
+          
+          localStorage.setItem('blockGameState', JSON.stringify(gameState));
+          console.log('Состояние игры сохранено');
+        } catch (error) {
+          console.error('Ошибка сохранения состояния игры:', error);
+        }
+      }
+
+      // Загрузка состояния игры
+      loadGameState() {
+        if (!CONFIG.saveData) return false;
+        
+        try {
+          const savedState = localStorage.getItem('blockGameState');
+          if (!savedState) return false;
+          
+          const gameState = JSON.parse(savedState);
+          
+          // Проверяем, что сохраненное состояние соответствует текущим настройкам
+          if (gameState.width === this.width && 
+              gameState.height === this.height && 
+              gameState.maxColors === this.maxColors && 
+              gameState.minPair === this.minPair &&
+              gameState.currentTheme === this.currentTheme) {
+            
+            // Восстанавливаем состояние
+            this.board = gameState.board;
+            this.pinnedPaletteIndex = gameState.pinnedPaletteIndex;
+            this.theme = gameState.theme;
+            
+            console.log('Состояние игры загружено');
+            return true;
+          } else {
+            console.log('Сохраненное состояние не соответствует текущим настройкам');
+            return false;
+          }
+        } catch (error) {
+          console.error('Ошибка загрузки состояния игры:', error);
+          return false;
+        }
+      }
+
     }
 
     let game;
@@ -2518,6 +2620,12 @@
       if (game) {
         const maxHeight = game.calculateMaxHeight();
         if (game.height > maxHeight) {
+          // Очищаем сохраненное состояние при изменении размера
+          if (CONFIG.saveData) {
+            localStorage.removeItem('blockGameState');
+            console.log('Размер окна изменен, сохраненное состояние очищено');
+          }
+          
           const pinnedPaletteIndex = game.pinnedPaletteIndex;
           
           CONFIG.height = maxHeight - 1;
@@ -2563,14 +2671,32 @@
       sizeSlider.oninput = function() {
         const sizes = ['auto', '10×10', '10×15', '10×20'];
         document.getElementById('settings-size').textContent = sizes[this.value];
+        
+        // Очищаем сохраненное состояние при изменении размера
+        if (CONFIG.saveData) {
+          localStorage.removeItem('blockGameState');
+          console.log('Размер поля изменен, сохраненное состояние очищено');
+        }
       };
       
       maxColorsSlider.oninput = function() {
         document.getElementById('settings-maxColors').textContent = this.value;
+        
+        // Очищаем сохраненное состояние при изменении количества цветов
+        if (CONFIG.saveData) {
+          localStorage.removeItem('blockGameState');
+          console.log('Количество цветов изменено, сохраненное состояние очищено');
+        }
       };
       
       minPairSlider.oninput = function() {
         document.getElementById('settings-minPair').textContent = this.value;
+        
+        // Очищаем сохраненное состояние при изменении минимального количества пар
+        if (CONFIG.saveData) {
+          localStorage.removeItem('blockGameState');
+          console.log('Минимальное количество пар изменено, сохраненное состояние очищено');
+        }
       };
       
       fullscreenSlider.oninput = function() {
@@ -2578,10 +2704,10 @@
         document.getElementById('settings-fullscreen').textContent = isFullscreen ? 'Включен' : 'Выключен';
       };
       
-      saveDataSlider.oninput = function() {
-        const saveData = this.value == 1;
-        document.getElementById('settings-saveData').textContent = saveData ? 'Включено' : 'Выключено';
-      };
+      // saveDataSlider.oninput = function() {
+      //   const saveData = this.value == 1;
+      //   document.getElementById('settings-saveData').textContent = saveData ? 'Включено' : 'Выключено';
+      // };
       
       const themeSelector = document.getElementById('theme-selector');
       themeSelector.onchange = function() {
@@ -2592,6 +2718,12 @@
         const customInput = document.getElementById('custom-theme-input');
         if (customInput) {
           customInput.style.display = selectedTheme === 'custom' ? 'block' : 'none';
+        }
+        
+        // Очищаем сохраненное состояние при изменении темы
+        if (CONFIG.saveData) {
+          localStorage.removeItem('blockGameState');
+          console.log('Тема изменена, сохраненное состояние очищено');
         }
         
         if (game) {
@@ -2630,8 +2762,8 @@
       const selectedTheme = document.getElementById('theme-selector').value;
       const fullscreenSlider = document.getElementById('fullscreen-slider');
       const isFullscreen = fullscreenSlider ? fullscreenSlider.value == 1 : false;
-      const saveDataSlider = document.getElementById('saveData-slider');
-      const saveData = saveDataSlider ? saveDataSlider.value == 1 : true;
+      // const saveDataSlider = document.getElementById('saveData-slider');
+      const saveData = true; // CONFIG.saveData;
       
       let width = 10, height = 10;
       if (sizeSlider.value == 0) {
@@ -2652,6 +2784,12 @@
       }
       
       const pinnedPaletteIndex = game ? game.pinnedPaletteIndex : -1;
+      
+      // Очищаем сохраненное состояние при изменении настроек
+      if (CONFIG.saveData) {
+        localStorage.removeItem('blockGameState');
+        console.log('Настройки изменены, сохраненное состояние очищено');
+      }
       
       CONFIG.width = width;
       CONFIG.height = height;
@@ -2749,6 +2887,12 @@
       }
       
       THEMES_CUSTOM.push(colors);
+      
+      // Очищаем сохраненное состояние при добавлении пользовательских цветов
+      if (CONFIG.saveData) {
+        localStorage.removeItem('blockGameState');
+        console.log('Пользовательские цвета добавлены, сохраненное состояние очищено');
+      }
       
       if (game) {
         game.updateThemePreview();
