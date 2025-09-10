@@ -2,16 +2,21 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+    <meta name="app-version" content="1.001" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Головоломка</title>
   <style>
     :root {
-      --width: 10;               
-      --height: 10;              
-      --cell: 56px;             
-      --gap: 6px;               
-      --hl: 120,180,255;        
+      --width: 10;                /* редактируемо: ширина поля */
+      --height: 10;              /* редактируемо: высота поля */
+      --cell: 56px;             /* размер клетки */
+      --gap: 6px;                /* отступ между клетками */
+      --hl: 120,180,255;        /* базовый цвет подсветки (RGB) */
         --board-padding: 10px; 
+          --color-accent-1: #64e0d0;
+          --color-accent-1-SCRLBR: #64e0d0 #1a2130;
+          --color-accent-2: #4a4a4a;
+          --color-accent-2-SCRLBR: #4a4a4a #1a2130;
     }
 
     body {
@@ -45,7 +50,7 @@
       transition: filter .2s ease, opacity .2s ease; width: fit-content; 
     }
 
-    
+    /* Отключаем прокрутку/растяжение при жестах, включаем точные pointer события на мобильных */
     #board { touch-action: none; overscroll-behavior: contain; }
 
     #board.dimmed::after {
@@ -62,7 +67,7 @@
       position: relative;
       border-radius: 9px;
       overflow: hidden;
-      background: #121826; 
+      background: #121826; /* для пустых */
       cursor: default;
       user-select: none;
       outline: none;
@@ -74,15 +79,21 @@
 
     .cell.filled { cursor: pointer; }
 
-   
+    /* Базовый заливочный цвет клетки (по умолчанию серый), плавное включение цвета */
     .cell { transform .06s linear; }
-    .cell.filled {
-      background-color: var(--color, #2b2f3a);
-    
-        transition: background-color .35s ease;
-    }
+    /* фон без перехода по умолчанию — чтобы "серые" не анимировались */
 
+.cell.filled {
+  background-color: var(--color, #2b2f3a);
+  /*transition: none;*/ /* Убираем резкую остановку анимации */
+}
 
+/* Плавный переход включается только для активированных клеток */
+.cell.filled[data-activated="1"] {
+  transition: background-color .35s ease;
+}
+
+    /* Белый блик */
     .cell.filled::after {
       content: '';
       position: absolute; inset: -40% -40% auto -40%; height: 45%;
@@ -91,29 +102,34 @@
       pointer-events: none;
       mix-blend-mode: screen; opacity: .5;
     }
+/* Скрываем блик, пока клетка не активирована */
+.cell.filled[data-activated="0"]::after {
+  opacity: 0;
+}
 
-
-
+    /* Подсветка источника и кандидатов */
     .cell.source { box-shadow: 0 0 0 1.25px rgba(255,255,255,.8), 0 8px 20px rgba(255,255,255,.15), inset 0 0 10px rgba(255,255,255,.15); z-index: 990;}
     .cell.candidate { box-shadow: 0 0 0 1.25px rgba(130,200,255,.95), 0 10px 26px rgba(60,170,255,.25), inset 0 0 16px rgba(120,200,255,.25); z-index: 999;}
     .cell.row-hl { box-shadow: 0 0 0 1.25px rgba(var(--hl),.6), 0 6px 18px rgba(var(--hl),.18), inset 0 0 0 rgba(0,0,0,0.0); }
     .cell.col-hl { box-shadow: 0 0 0 1.25px rgba(var(--hl),.6), 0 6px 18px rgba(var(--hl),.18), inset 0 0 0 rgba(0,0,0,0.0); }
-
+    /* Подсветка одинаковых блоков при клике */
     .cell.filled.pulse-same { 
       background-color: rgba(var(--hl), .35) !important; 
       box-shadow: 0 0 0 1.25px rgba(64,224,208,.95), 
                   0 10px 26px rgba(64,224,208,.25), 
                   inset 0 0 16px rgba(64,224,208,.25);
+                  /* плавный откат к исходному состоянию */
+  transition-delay: 0s; /* старт сразу */
     }
     .cell.dragging { z-index: 999; }
 
-
+    /* Анимация исчезновения */
     .cell.vanish { animation: vanish .25s ease-in forwards; }
     @keyframes vanish {
       to { opacity: 0; transform: scale(.85); filter: blur(2px); }
     }
 
-
+    /* Анимация удаления с эффектом взрыва */
     .cell.explode { animation: explode .4s ease-out forwards; }
     @keyframes explode {
       0% { 
@@ -133,7 +149,7 @@
       }
     }
 
-
+    /* Анимация удаления с эффектом затухания */
     .cell.fade-out { animation: fadeOut .3s ease-in forwards; }
     @keyframes fadeOut {
       0% { 
@@ -148,7 +164,7 @@
       }
     }
 
-
+    /* Анимация удаления с эффектом сжатия */
     .cell.shrink { animation: shrink .25s ease-in forwards; }
     @keyframes shrink {
       0% { 
@@ -163,7 +179,7 @@
       }
     }
 
-
+    /* Анимация удаления с эффектом волны */
     .cell.wave-out { animation: waveOut .35s ease-out forwards; }
     @keyframes waveOut {
       0% { 
@@ -179,24 +195,24 @@
         transform: scale(0.5) rotateY(180deg); 
       }
     }
-
+    /* Анимация удаления после перемещения */
     .cell.move-remove {
       transition: all 0.3s ease-out;
     }
 
 
-
+    /*  подсказки */
     .hint { font-size: 13px; opacity: .8; }
     button { background:#1c2335; color:#e9ecf1; border:1px solid #2a3550; border-radius:12px; padding:8px 12px; cursor:pointer; }
     button:hover { background:#222c44; }
     button { transition: filter .25s linear, background-color .25s linear, color .25s linear, opacity .25s linear; }
     #hint.cooldown { filter: brightness(0.7) saturate(0.7); opacity: 0.7; pointer-events: none; }
-
+    /* Подсветка супер-пары (исключительный красный) */
     .cell.filled.hinted-super {
       background-color: rgba(255, 60, 60, .35) !important;
       box-shadow: 0 0 0 1.25px rgba(255,80,80,.95), 0 10px 26px rgba(255,60,60,.25), inset 0 0 16px rgba(255,120,120,.25);
     }
-
+    /* Центрированное всплывающее сообщение */
     .overlay-message {
       position: absolute;
       left: 50%;
@@ -248,13 +264,13 @@
       border-radius: 16px;
       padding: 24px;
       max-width: 400px;
-      width: 90%;
+      width: 80%;
       max-height: 80vh;
       overflow-y: auto;
       
  
       scrollbar-width: thin;
-      scrollbar-color: #64e0d0 #1a2130;
+      scrollbar-color:  var(--color-accent-1-SCRLBR);
     }
     
 
@@ -328,7 +344,7 @@
       color: #64e0d0;
       font-weight: 600;
     }
-
+    /* ===== Адаптация под мобильные (страница полностью помещается на экран) ===== */
     @media (max-width: 768px) {
       :root { --cell: 44px; --gap: 6px; }
       body { padding:inherit; }
@@ -697,6 +713,7 @@
     .palette-container.swipeable {
       position: relative;
       overflow: hidden;
+      min-height: fit-content;
     }
 
     .palette-container.swipeable .swipe-overlay {
@@ -730,6 +747,57 @@
     .hud-right {
   display: flex;
   gap: 12px; 
+}
+
+/* Контейнер тоггла */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 70px;
+  height: 34px;
+  cursor: pointer;
+}
+
+/* Скрытый input */
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Слайдер */
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 12px; /* закругленные углы */
+  transition: 0.3s;
+  font-size: 14px;
+  font-family: sans-serif;
+  color: white;
+  text-align: center;
+  line-height: 34px;
+}
+
+/* Когда включен */
+.toggle input:checked + .toggle-slider {
+  background-color: #4caf50;
+}
+
+/* Текст внутри */
+.toggle-slider::before {
+  content: "Выкл";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  transition: 0.3s;
+}
+
+.toggle input:checked + .toggle-slider::before {
+  content: "Вкл";
 }
   </style>
 </head>
@@ -842,6 +910,17 @@
           </div>
         </div>
       </div>
+
+<!-- div class="setting-group">
+  <label class="setting-label">
+    Полноэкранный режим: 
+   <label class="toggle">
+      <input type="checkbox" id="fullscreen-toggle">
+      <span class="toggle-slider"></span>
+    </label>
+  </label>
+  
+</div -->
       
 
       
@@ -855,26 +934,25 @@
   <script>
     
     const CONFIG = {
-      width: 10,        
-      height: 10,       
-      maxColors: 20,     
-      minPair: 1,       
+      width: 10,         // ширина поля (редактируемо)
+      height: 10,       // высота поля (редактируемо)
+      maxColors: 20,      // MAXID_color — максимум разных цветов (редактируемо)
+      minPair: 1,       // MIN_pair — минимум пар каждого цвета (редактируемо)
       theme: 'default', 
       fullscreen: false,    
     };
 
-
+    // Темы цветов
     const THEMES = [
 
-      ['#D16F6F', '#C9A15A', '#3EA084', '#4B79B0', '#7A5EA0',
+      ['#D16F6F', '#e2a73d', '#3EA084', '#4B79B0', '#7A5EA0',
        '#B36D8C', '#246e5f', '#C07A3F', '#794b4b', '#6FAF7A',
         '#B05B4A', '#B78E62', '#3e5553', '#213D45', '#BFAF56',
-         '#8F6E6B', '#426b37', '#6B8B2E', '#1E79A0', '#af3e33',
-          '#6B56A8', '#D26947', '#0E7A78', '#C6A200', '#5A4970'],
-
-
+         '#675250', '#426b37', '#6B8B2E', '#867a30', '#af3e33',
+          '#74717d', '#D26947', '#0E7A78', '#C6A200', '#5A4970'],
 
     ];
+
 
    
     const THEMES_MONONIGHT = [
@@ -912,7 +990,7 @@
       'custom': { name: 'Пользовательская', themes: THEMES_CUSTOM }
     };
 
-    
+    // Утилиты координат
     const idx = (x, y, width) => y * width + x;
     
     
@@ -990,35 +1068,36 @@
       constructor({ width, height, maxColors, minPair, theme = 'default' }) {
         this.width = width;
         this.height = height;
-        this.size = Math.max(width, height); 
+        this.size = Math.max(width, height);  // для обратной совместимости
         this.currentTheme = theme;
         this.pinnedPaletteIndex = -1; 
 
         this.theme = this.getCurrentThemeColors();
+        // выбрать тему и ограничить число цветов длиной темы
         this.maxColors = Math.min(maxColors, this.theme.length);
         this.minPair = minPair;
         this.state = {
-          locked: false,              
-          source: null,               
-          candidates: []             
+          locked: false,      // когда ждём выбора второго из кандидатов        
+          source: null,          // {x,y,color}     
+          candidates: []             // [{x,y}]
         };
-        this.superHint = null;        
+        this.superHint = null;        // { a:{x,y}, b:{x,y} }
         this._hintCooldownUntil = 0;
         this.drag = {
           active: false,
           startX: null,
           startY: null,
-          axis: null,                
+          axis: null,             // 'x' | 'y'   
           startClientX: 0,
           startClientY: 0,
           thresholdPx: 8,
         };
         this._blockClicksUntil = 0;
-        this.board = this.generateBoard(); 
+        this.board = this.generateBoard(); // 2D массив цветовых ID или null
         this.mount();
-              
+        // Фоновая проверка на старте (на случай особых раскладок)
       setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
-             
+        // Кнопка подсказки
         this.bindHintButton();
       }
 
@@ -1172,7 +1251,7 @@
         const isPinnedPalette = this.pinnedPaletteIndex === paletteIndex;
         const headerText = `Палитра ${paletteIndex + 1}${isCurrentPalette ? ' (текущая)' : ''}${isPinnedPalette ? ' 📌' : ''}`;
         paletteHeader.textContent = headerText;
-        paletteHeader.style.cssText = `width: 100%; margin: 8px 0 4px 0; font-size: 12px; color: ${isCurrentPalette ? '#64e0d0' : '#8b9bb4'}; font-weight: ${isCurrentPalette ? '600' : '400'}; cursor: pointer; user-select: none;`;
+        paletteHeader.style.cssText = `margin: 8px 0 4px 0; font-size: 12px; color: ${isCurrentPalette ? '#64e0d0' : '#8b9bb4'}; font-weight: ${isCurrentPalette ? '600' : '400'}; cursor: pointer; user-select: none;`;
         
         paletteHeader.addEventListener('click', () => {
           this.togglePalettePin(paletteIndex);
@@ -1276,11 +1355,11 @@
       return Math.max(8, Math.min(20, maxCells)); 
     }
 
-
+      // === Генерация поля с гарантированными парами ===
       generateBoard() {
         const total = this.width * this.height;
         const flat = Array(total).fill(null);
-
+        // Коррекция MIN_pair на случай, если не помещается
         const maxPairsPossible = Math.floor(total / (2 * this.maxColors));
         const effectiveMinPair = Math.min(this.minPair, maxPairsPossible);
         if (effectiveMinPair !== this.minPair) {
@@ -1288,20 +1367,20 @@
           this.minPair = effectiveMinPair;
           CONFIG.minPair = effectiveMinPair;
         }
-
+        // 1) обязательные пары для каждого цвета
         for (let color = 0; color < this.maxColors; color++) {
           for (let p = 0; p < effectiveMinPair; p++) {
             this.#placeRandomPair(flat, color);
           }
         }
-
+        // 2) оставшиеся клетки — случайными парами (по 2 одинаковых)
         let remaining = flat.filter(v => v === null).length;
         while (remaining > 0) {
           const color = Math.floor(Math.random() * this.maxColors);
           this.#placeRandomPair(flat, color);
           remaining -= 2;
         }
-
+        // Преобразуем в 2D
         const grid = [];
         for (let y = 0; y < this.height; y++) {
           grid[y] = [];
@@ -1323,60 +1402,83 @@
         while (flat[i] !== null) i = Math.floor(Math.random() * flat.length);
         return i;
       }
+      // === Отрисовка ===
 
       mount() {
-        const boardEl = document.getElementById('board');
-        boardEl.innerHTML = '';
-        boardEl.style.setProperty('--width', this.width);
-        boardEl.style.setProperty('--height', this.height);
+      const boardEl = document.getElementById('board');
+      boardEl.innerHTML = '';
+      boardEl.style.setProperty('--width', this.width);
+      boardEl.style.setProperty('--height', this.height);
 
-        if (this._revealTimers && this._revealTimers.length) {
-          for (const t of this._revealTimers) clearTimeout(t);
-        }
-        this._revealTimers = [];
+      // Отменяем предыдущее анимирование (и timeouts, на всякий случай)
+      if (this._revealTimer) {
+        cancelAnimationFrame(this._revealTimer);
+        this._revealTimer = null;
+      }
+      if (this._revealTimers && this._revealTimers.length) {
+        for (const t of this._revealTimers) clearTimeout(t);
+      }
+      this._revealTimers = [];
 
-        for (let y = 0; y < this.height; y++) {
-          for (let x = 0; x < this.width; x++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            cell.tabIndex = -1;
-            cell.dataset.x = x;
-            cell.dataset.y = y;
+      for (let y = 0; y < this.height; y++) {
+        for (let x = 0; x < this.width; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.tabIndex = -1;
+          cell.dataset.x = x;
+          cell.dataset.y = y;
 
-            const color = this.board[y][x];
-            if (color !== null) {
-              cell.classList.add('filled');
-              cell.dataset.colorId = String(color);
-              cell.dataset.activated = '0';
-            }
-
-            cell.addEventListener('click', (e) => this.onCellClick(e, x, y));
-            cell.addEventListener('pointerdown', (e) => this.onPointerDown(e, x, y));
-            boardEl.appendChild(cell);
+          const color = this.board[y][x];
+          if (color !== null && color !== undefined) {
+            // пока не задаём CSS-переменную --color — клетка остаётся серой,
+            // и у неё data-activated = '0' => переходы/блик будут отключены по CSS
+            cell.classList.add('filled');
+            cell.dataset.colorId = String(color);
+            cell.dataset.activated = '0';
+          } else {
+            cell.dataset.activated = '0';
           }
-        }
 
-        this.runInitialReveal(2000);
-        setTimeout(() => this.centerAllBlocks(), 100);
-        setTimeout(() => this.updateSettingsDisplay(), 200);
+          cell.addEventListener('click', (e) => this.onCellClick(e, x, y));
+          cell.addEventListener('pointerdown', (e) => this.onPointerDown(e, x, y));
+          boardEl.appendChild(cell);
+        }
       }
 
-      #applyColor(cell, colorId, instant = false) {
-        const colorHex = this.theme[colorId % this.theme.length];
+      // запуск «включения лампочек»
+      this.runInitialReveal(2500);
+    }
+
+
+    #applyColor(cell, colorId, instant = false) {
+      const colorHex = this.theme[colorId % this.theme.length];
+
+      // общая часть
+      cell.classList.add('filled');
+      cell.classList.remove('vanish');
+      cell.dataset.colorId = String(colorId);
+
+      if (instant) {
+        // мгновенно: временно отключаем inline transition и сразу применяем цвет
         const prevTransition = cell.style.transition;
         cell.style.transition = 'none';
-        cell.style.setProperty('--color', colorHex);
-        void cell.offsetWidth;
-        if (!instant) {
-          cell.style.transition = prevTransition;
-        }
-        cell.classList.add('filled');
-        cell.classList.remove('vanish');
-        cell.dataset.colorId = String(colorId);
         cell.dataset.activated = '1';
+        cell.style.setProperty('--color', colorHex);
+        // форс рефлоу, затем восстановим transition
+        void cell.offsetWidth;
+        cell.style.transition = prevTransition;
+      } else {
+        // обычный (анимационный) путь: ставим activated, затем меняем цвет
+        // — это активирует CSS-переходы, определенные в .cell.filled[data-activated="1"]
+        cell.dataset.activated = '1';
+        cell.style.setProperty('--color', colorHex);
       }
+    }
 
-      runInitialReveal(totalMs = 3000) {
+
+
+
+      runInitialReveal(totalMs = 2500, batchSize = 20) {
         const cellsToReveal = [];
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
@@ -1391,32 +1493,66 @@
           }
         }
         if (cellsToReveal.length === 0) return;
+
+        // сортировка по диагоналям
         cellsToReveal.sort((a, b) => a.diag - b.diag || a.x - b.x);
-        const lastIndex = cellsToReveal.length - 1;
-        for (let i = 0; i < cellsToReveal.length; i++) {
-          const { el, colorId } = cellsToReveal[i];
-          const delay = Math.round((i / lastIndex) * totalMs);
-          const t = setTimeout(() => {
-            const colorHex = this.theme[colorId % this.theme.length];
-            el.style.setProperty('--color', colorHex);
-            el.dataset.activated = '1';
-          }, delay);
-          this._revealTimers.push(t);
+
+        // отменяем старый rAF
+        if (this._revealTimer) {
+          cancelAnimationFrame(this._revealTimer);
+          this._revealTimer = null;
         }
-        setTimeout(() => this.centerAllBlocks(), totalMs + 100);
+
+        const lastIndex = cellsToReveal.length - 1;
+        const startTime = performance.now();
+        this._revealIndex = 0;
+
+        const animate = (now) => {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / totalMs, 1);
+          const targetIndex = Math.floor(progress * (lastIndex + 1));
+
+          // вместо того, чтобы открывать сразу все targetIndex,
+          // откроем только batchSize за кадр
+          let processed = 0;
+          while (this._revealIndex < targetIndex && processed < batchSize) {
+            const { el, colorId } = cellsToReveal[this._revealIndex];
+            if (el.dataset.activated !== '1') {
+              const colorHex = this.theme[colorId % this.theme.length];
+              el.dataset.activated = '1';
+              el.style.setProperty('--color', colorHex);
+            }
+            this._revealIndex++;
+            processed++;
+          }
+
+          if (progress < 1 || this._revealIndex < cellsToReveal.length) {
+            this._revealTimer = requestAnimationFrame(animate);
+          } else {
+            this._revealTimer = null;
+            this._revealIndex = 0;
+          }
+        };
+
+        this._revealTimer = requestAnimationFrame(animate);
       }
+
+
 
       #clearCell(cell) {
         cell.removeAttribute('style');
         cell.classList.remove('filled', 'candidate', 'source');
         cell.classList.add('vanish');
+        delete cell.dataset.colorId;
+        cell.dataset.activated = '0';
         setTimeout(() => { cell.classList.remove('vanish'); }, 260);
       }
+
 
       getCellEl(x, y) {
         return document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
       }
-
+      // === Поиск ближайших по 4 направлениям до первой преграды ===
       findNearestBlocksSameColor(x, y) {
         const color = this.board[y][x];
         if (color === null) return [];
@@ -1434,15 +1570,17 @@
             cx += dx; cy += dy;
           }
         }
-        return found; 
+        return found; // массив координат кандидатов
       }
-
+      // === Drag & Move Mechanics ===
       onPointerDown(e, x, y) {
+        // Если есть подсказка — запомним её для текущего действия и сбросим визуально
         let hintForThisAction = null;
         let isHintedStart = false;
         if (this.superHint) {
           isHintedStart = (this.superHint.a.x === x && this.superHint.a.y === y) || (this.superHint.b.x === x && this.superHint.b.y === y);
           hintForThisAction = this.superHint;
+          // Сбрасываем подсказку и запускаем кулдаун, но не перехватываем действия
           this.clearSuperHint(false);
           this.startHintCooldown();
         }
@@ -1450,21 +1588,26 @@
         const color = this.board[y][x];
         if (color === null) return;
         e.preventDefault();
+        // Преддвижение: первичный поиск пар на исходной позиции
         const preCandidates = this.findNearestBlocksSameColor(x, y);
         if (preCandidates.length === 1) {
           const { x: tx, y: ty } = preCandidates[0];
+          // Центрируем все блоки перед удалением пары
           this.centerAllBlocks();
           this.removePair(x, y, tx, ty);
           return;
         }
         if (preCandidates.length > 1) {
+          // Если стартовали по подсвеченному блоку — обойти режим выбора и удалить супер-пару
           if (hintForThisAction && isHintedStart) {
             const other = (hintForThisAction.a.x === x && hintForThisAction.a.y === y) ? hintForThisAction.b : hintForThisAction.a;
+            // Центрируем все блоки перед удалением супер-пары
             this.centerAllBlocks();
             this.removePair(x, y, other.x, other.y);
             return;
           }
           const boardEl = document.getElementById('board');
+          // Центрируем все блоки перед входом в режим выбора
           this.centerAllBlocks();
           this.enterSelectionMode(x, y, preCandidates);
           boardEl.classList.add('dimmed');
@@ -1479,6 +1622,7 @@
         this.drag.stepPx = this.#getStepPixels();
         this.drag.previewCells = [];
         this.drag.previewOffset = 0;
+        // запомним подсказку для возможной логики после перемещения
         this.drag.hintForThisAction = hintForThisAction;
         this.drag.startedOnHinted = !!isHintedStart;
         this.highlightCross(x, y);
@@ -1510,6 +1654,7 @@
         const delta = axis === 'x' ? dx : dy;
         if (delta === 0) { this.clearPreviewTransforms(); return; }
         const sign = Math.sign(delta);
+        // максимально допустимое число шагов (в клетках) по текущему направлению
         const allowedSteps = Math.abs(this.computeAllowedShift(this.drag.startX, this.drag.startY, axis, sign * 999));
         if (allowedSteps === 0) { this.clearPreviewTransforms(); return; }
         const desiredStepsFloat = delta / stepPx;
@@ -1517,6 +1662,7 @@
         const offsetPx = clampedStepsFloat * stepPx;
         const { from, to } = this.getChainRange(this.drag.startX, this.drag.startY, axis, sign);
         this.applyPreviewTransforms(axis, this.drag.startX, this.drag.startY, from, to, offsetPx);
+        // обновить подсветку текущего пересечения по ближайшей клетке к положению курсора
         const roundedSteps = Math.round(clampedStepsFloat);
         const hx = axis === 'x' ? Math.max(0, Math.min(this.width - 1, this.drag.startX + roundedSteps)) : this.drag.startX;
         const hy = axis === 'y' ? Math.max(0, Math.min(this.height - 1, this.drag.startY + roundedSteps)) : this.drag.startY;
@@ -1534,11 +1680,13 @@
         const stepPx = this.drag.stepPx;
 
         if (!axis) {
+          // treat as click - центрируем блоки при клике
           this.centerAllBlocks();
           return;
         }
         const desiredSteps = axis === 'x' ? Math.round(dx / stepPx) : Math.round(dy / stepPx);
         if (desiredSteps === 0) {
+          // no move - центрируем блоки при клике без движения
           this.centerAllBlocks();
           return;
         }
@@ -1550,40 +1698,51 @@
 
         const { x: nx, y: ny } = this.moveChain(this.drag.startX, this.drag.startY, axis, actualSteps);
         this._blockClicksUntil = performance.now() + 200;
-
+        // новое правило: если пар нет, откатить перемещение
         const candidates = this.findNearestBlocksSameColor(nx, ny);
         const boardEl = document.getElementById('board');
 
         if (candidates.length === 0) {
+          // Откатываем визуально (убираем preview transform), и восстанавливаем snapshot.
+          // clearPreviewTransforms нужно вызвать до restore, чтобы ячейки не оставались с translate.
           this.clearPreviewTransforms();
+          // Восстанавливаем состояние цепочки. (Важно: captureChainSnapshot не должен восстанавливать ячейки, которые
+          // намеренно должны исчезнуть — но тут нет найденных кандидатов, так что обычный откат корректен.)
           this.restoreChainSnapshot(snapshot, axis, actualSteps);
+          // Центрируем все блоки после отката
           this.centerAllBlocks();
           return;
         }
-
+        // Если нашли кандидатов — не откатываем transform: пусть блок останется визуально на месте отпускания.
+        // Затем удаляем пару и плавно убираем их визуально (fade-out).
         const scheduleClearPreview = () => {
+          // небольшой таймаут — даём время анимации fade-out выполниться, затем чистим preview transforms.
           setTimeout(() => {
             this.clearPreviewTransforms();
+            // также можно принудительно очистить вспомогательные классы
             if (boardEl) boardEl.classList.remove('noreturn');
+            // Центрируем все блоки после очистки preview transforms
             this.centerAllBlocks();
           }, 0);
         };
-
+        // --- 1 кандидат: удаляем напрямую ---
         if (candidates.length === 1) {
           const { x: tx, y: ty } = candidates[0];
-
+          // Визуально: отключаем анимацию возвращения (чтобы не было эффекта "отката")
           if (boardEl) boardEl.classList.add('noreturn');
 
           this.removePair(nx, ny, tx, ty);
           scheduleClearPreview();
+          // Центрируем все блоки после успешного удаления
           setTimeout(() => this.centerAllBlocks(), 100);
           return;
         }
-
+        // --- несколько кандидатов — если тянули, начав с подсказанного блока, удалить супер-пару ---
         if (this.drag.hintForThisAction && this.drag.startedOnHinted) {
           const { a, b } = this.drag.hintForThisAction;
           const isStartA = a.x === this.drag.startX && a.y === this.drag.startY;
           const partner = isStartA ? b : a;
+          // учтём, что партнёр мог быть частью сдвигаемой цепочки и сместился
           let px = partner.x, py = partner.y;
           if (axis === 'x' && partner.y === this.drag.startY) {
             const rng = this.getChainRange(this.drag.startX, this.drag.startY, axis, sign);
@@ -1598,13 +1757,15 @@
 
           this.removePair(nx, ny, px, py);
           scheduleClearPreview();
+          // Центрируем все блоки после удаления супер-пары
           setTimeout(() => this.centerAllBlocks(), 100);
           return;
         }
-
+        // иначе — режим выбора (selection mode)
         this.enterSelectionMode(nx, ny, candidates);
         if (boardEl) boardEl.classList.add('dimmed');
         this.centerAllBlocks();
+        // Примечание: в режиме выбора мы оставляем preview-transform, чтобы игрок видел, где он отпустил блок.
       }
 
 
@@ -1615,12 +1776,13 @@
         const gap = parseFloat(rootStyles.getPropertyValue('--gap')) || 6;
         return cell + gap;
       }
-
+      // Функция для центрирования всех блоков на игровом поле
       centerAllBlocks() {
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
             const cell = this.getCellEl(x, y);
             if (cell) {
+              // Убираем все transform стили, чтобы блоки вернулись в исходное положение
               cell.style.transform = '';
               cell.classList.remove('dragging');
             }
@@ -1761,6 +1923,7 @@
       }
 
       highlightCross(x0, y0) {
+        // обновить подсветку на новую позицию
         if (this._hlPrev) this.clearHighlightCross();
         this._hlPrev = { x: x0, y: y0 };
         for (let x = 0; x < this.width; x++) this.getCellEl(x, y0)?.classList.add('row-hl');
@@ -1822,7 +1985,7 @@
           const cell = this.getCellEl(x, y);
           const color = this.board[y][x];
           if (color !== null) {
-            this.#applyColor(cell, color, true);
+            this.#applyColor(cell, color, true); // мгновенно для перерисовки
           } else {
             this.#clearCellImmediate(cell);
           }
@@ -1834,7 +1997,7 @@
           const cell = this.getCellEl(x, y);
           const color = this.board[y][x];
           if (color !== null) {
-            this.#applyColor(cell, color, true);
+            this.#applyColor(cell, color, true); // мгновенно для перерисовки
           } else {
             this.#clearCellImmediate(cell);
           }
@@ -1863,31 +2026,33 @@
           boardEl.classList.add('dimmed');
         }
       }
-
+      // === Обработка клика по клетке ===
       onCellClick(e, x, y) {
         const boardEl = document.getElementById('board');
         const cellEl = e.currentTarget;
         if (performance.now() < this._blockClicksUntil) return;
         const color = this.board[y][x];
         if (color === null) return; 
-
+        // Центрируем все блоки при клике (на случай если они были слегка сдвинуты)
         this.centerAllBlocks();
-
+        // Если есть подсказка — мягко сбрасываем (и запускаем кулдаун), но не перехватываем действие
         if (this.superHint) { this.clearSuperHint(false); this.startHintCooldown(); }
-
+        // Если ждём выбора среди кандидатов — принимаем клики только по ним
         if (this.state.locked) {
           const isCandidate = cellEl.classList.contains('candidate');
           if (!isCandidate) return; 
-
+          // исполняем удаление пары: source + выбранный
           const s = this.state.source;
           this.removePair(s.x, s.y, x, y);
           this.exitSelectionMode();
           return;
         }
-
+        // Иначе: обычный клик — поиск ближайших совпадений
         const candidates = this.findNearestBlocksSameColor(x, y);
         if (candidates.length === 0) {
+          // Подсветить все блоки того же цвета мягким пульсом на 1 секунду
           this.pulseSameColor(x, y);
+          // Центрируем все блоки при пульсации (нет кандидатов)
           setTimeout(() => this.centerAllBlocks(), 100);
           return;
         }
@@ -1896,16 +2061,21 @@
           this.removePair(x, y, tx, ty);
           return;
         }
-
+        // Несколько совпадений — если кликнули по блоку, который был в подсказке (и мы её только что сбросили), удалить супер-пару
         if (!this.superHint && this._hintCooldownUntil > performance.now()) {
+          // мы знаем, что подсказка только что была активна; проверим, было ли начало на одном из её блоков
+          // к сожалению, к этому моменту мы не знаем предыдущую пару, поэтому этот путь обрабатывается в onPointerDown
         }
+        // Обычный режим выбора
         this.enterSelectionMode(x, y, candidates);
         boardEl.classList.add('dimmed');
       }
 
-      pulseSameColor(x0, y0) {
+
+      pulseSameColor(x0, y0, batchSize = 4) {
         const colorId = this.board[y0][x0];
         if (colorId === null) return;
+
         const toPulse = [];
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
@@ -1917,18 +2087,49 @@
             }
           }
         }
-        for (const el of toPulse) el.classList.add('pulse-same');
+        if (toPulse.length === 0) return;
+
+        // --- Активация подсветки батчами ---
+        let index = 0;
+        const activateBatch = () => {
+          let processed = 0;
+          while (index < toPulse.length && processed < batchSize) {
+            toPulse[index].classList.add('pulse-same');
+            index++;
+            processed++;
+          }
+          if (index < toPulse.length) {
+            requestAnimationFrame(activateBatch);
+          }
+        };
+        requestAnimationFrame(activateBatch);
+
+        // --- Деактивация через 1 сек ---
         setTimeout(() => {
-          for (const el of toPulse) el.classList.remove('pulse-same');
-          this.centerAllBlocks();
-        }, 1000);
+          let removeIndex = 0;
+          const removeBatch = () => {
+            let processed = 0;
+            while (removeIndex < toPulse.length && processed < batchSize) {
+              toPulse[removeIndex].classList.remove('pulse-same');
+              removeIndex++;
+              processed++;
+            }
+            if (removeIndex < toPulse.length) {
+              requestAnimationFrame(removeBatch);
+            } else {
+              //this.centerAllBlocks();
+            }
+          };
+          requestAnimationFrame(removeBatch);
+        }, 2500);
       }
+
 
       enterSelectionMode(x, y, candidates) {
         this.state.locked = true;
         this.state.source = { x, y, color: this.board[y][x] };
         this.state.candidates = candidates;
-
+        // визуальная подсветка
         const srcEl = this.getCellEl(x, y);
         srcEl.classList.add('source');
         for (const {x: cx, y: cy} of candidates) {
@@ -1936,12 +2137,14 @@
           el.classList.add('candidate');
         }
         this.updateHintButtonState();
+        // Центрируем все блоки при входе в режим выбора
         this.centerAllBlocks();
       }
 
       exitSelectionMode() {
         const boardEl = document.getElementById('board');
         boardEl.classList.remove('dimmed');
+        // снять классы
         if (this.state.source) this.getCellEl(this.state.source.x, this.state.source.y)?.classList.remove('source');
         for (const {x, y} of this.state.candidates) {
           this.getCellEl(x, y)?.classList.remove('candidate');
@@ -1952,35 +2155,35 @@
         this.updateHintButtonState();
         this.centerAllBlocks();
       }
-
+      // === Удаление пары ===
       removePair(x1, y1, x2, y2) {
         this.board[y1][x1] = null;
         this.board[y2][x2] = null;
         const a = this.getCellEl(x1, y1);
         const b = this.getCellEl(x2, y2);
-        
+        // Применяем случайную анимацию удаления для каждого блока
         this.animateCellRemoval(a);
         this.animateCellRemoval(b);
-        
+        // Фоновая проверка: есть ли доступные ходы, иначе перемешать
         setTimeout(() => this.checkAndReshuffleIfNoMoves(), 400);
       }
-
+      // Функция для анимации удаления блока с случайным эффектом
       animateCellRemoval(cell) {
         if (!cell) return;
-        
+        // Массив доступных анимаций
         const animations = ['explode', 'fade-out', 'shrink', 'wave-out'];
-        
+        // Выбираем случайную анимацию
         const randomAnimation = animations[Math.floor(Math.random() * animations.length)];
-        
+        // Применяем анимацию
         cell.classList.add(randomAnimation);
-        
+        // Убираем анимацию и очищаем ячейку после завершения
         const animationDuration = this.getAnimationDuration(randomAnimation);
         setTimeout(() => {
           cell.classList.remove(randomAnimation);
           this.#clearCell(cell);
         }, animationDuration);
       }
-
+      // Получение длительности анимации в миллисекундах
       getAnimationDuration(animationClass) {
         const durations = {
           'explode': 400,
@@ -1990,7 +2193,7 @@
         };
         return durations[animationClass] || 300;
       }
-
+      // === Сброс/перегенерация ===
       reset() {
         this.exitSelectionMode();
         this.clearSuperHint(true);
@@ -1999,27 +2202,32 @@
         this.maxColors = Math.min(this.maxColors, this.theme.length);
         this.board = this.generateBoard();
         this.mount();
-        setTimeout(() => this.centerAllBlocks(), 100);
-        setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
-        setTimeout(() => this.updateSettingsDisplay(), 300);
+        // Центрируем все блоки после перезапуска //ЗАКОММЕНТИРОВАНО ДЛЯ ТЕСТИРОВАНИЯ ОПТИМИЗАЦИИ НАГРУЗКИ
+        //setTimeout(() => this.centerAllBlocks(), 100);
+        //setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
+        //setTimeout(() => this.updateSettingsDisplay(), 300);
         
         saveGameData();
       }
-
+      // === Фоновая проверка доступных ходов (условия A и B) ===
       checkAndReshuffleIfNoMoves() {
         if (this._animatingReshuffle) return;
         if (this.hasAnyAvailablePair()) return;
         this.showNoMovesMessage();
-        this.runWaveReshuffle();
+          setTimeout(() => {
+          this.runWaveReshuffle();
+          }, 500);
       }
 
       hasAnyAvailablePair() {
+        // Условие A: есть прямая пара без перемещений
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
             if (this.board[y][x] === null) continue;
             if (this.findNearestBlocksSameColor(x, y).length > 0) return true;
           }
         }
+        // Условие B: можно сделать пару после допустимого перемещения цепочки
         return this.canMakePairByMove();
       }
 
@@ -2045,7 +2253,7 @@
         }
         return false;
       }
-
+      // === Чистые хелперы для проверки на копии поля ===
       computeAllowedShiftOn(board, x0, y0, axis, desiredSteps) {
         const width = this.width;
         const height = this.height;
@@ -2187,29 +2395,30 @@
         }
         return found;
       }
-
+      // === Всплывающее сообщение ===
       showNoMovesMessage() {
         const boardEl = document.getElementById('board');
         const msg = document.createElement('div');
         msg.className = 'overlay-message';
         msg.textContent = 'Нет доступных ходов. Перемешиваю.';
         boardEl.appendChild(msg);
-        setTimeout(() => { msg.remove(); }, 2000);
+        setTimeout(() => { msg.remove(); }, 3000);
       }
-
+      // === Волновая анимация в серый и перемешивание ===
       runWaveReshuffle() {
         if (this._animatingReshuffle) return;
         this._animatingReshuffle = true;
         this.state.locked = true;
         this.updateHintButtonState();
+        // 1) Планируем новое расположение (сохранить кол-ва цветов)
         const newBoard = this.planReshufflePreserveCounts();
-
+        // 2) Волна «в серый» из левого верхнего угла
         const steps = [];
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
             const el = this.getCellEl(x, y);
             if (!el) continue;
-            const delay = (x + y) * 14; 
+            const delay = (x + y) * 14; // диагональная волна
             steps.push({ el, x, y, delay });
           }
         }
@@ -2224,12 +2433,13 @@
         }
 
         const lastDelay = steps.length ? steps[steps.length - 1].delay : 0;
-
+        // 3) Применяем новую раскладку и волной «включаем» цвета
         setTimeout(() => {
           this.board = newBoard;
           const pinnedPaletteIndex = this.pinnedPaletteIndex;
           this.theme = this.getCurrentThemeColors();
           this.maxColors = Math.min(this.maxColors, this.theme.length);
+          // Подготовить DOM: расставить data, но цвет не включать (activated=0)
           for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
               const el = this.getCellEl(x, y);
@@ -2238,13 +2448,15 @@
                 el.classList.add('filled');
                 el.dataset.colorId = String(color);
                 el.dataset.activated = '0';
+                // оставляем серым до «включения»
               } else {
                 this.#clearCellImmediate(el);
               }
             }
           }
+          // Волна включения (диагонали из левого верхнего)
           this.runInitialReveal(700);
-
+          // Разблокировать после короткой паузы
           setTimeout(() => {
             this._animatingReshuffle = false;
             this.state.locked = false;
@@ -2255,6 +2467,7 @@
       }
 
       planReshufflePreserveCounts() {
+        // Собрать список цветов
         const colors = [];
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
@@ -2269,6 +2482,7 @@
         let attempt = 0;
         const maxAttempts = 300;
         while (attempt++ < maxAttempts) {
+          // тасуем позиции и цвета
           const shuffledCells = cells.slice().sort(() => Math.random() - 0.5);
           const shuffledColors = colors.slice().sort(() => Math.random() - 0.5);
           const grid = Array.from({ length: this.height }, () => Array(this.width).fill(null));
@@ -2277,19 +2491,23 @@
             const { x, y } = shuffledCells[i];
             if (i < shuffledColors.length) grid[y][x] = shuffledColors[ci++];
           }
+          // проверим на наличие доступных ходов
           if (this.hasAnyAvailablePairOn(grid)) return grid;
         }
+        // fallback: если не нашли, просто сгенерировать новое поле, сохраняя конфиг
         console.warn('Не удалось быстро подобрать раскладку, генерирую новое поле.');
         return this.generateBoard();
       }
 
       hasAnyAvailablePairOn(board) {
+        // Условие A
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
             if (board[y][x] === null) continue;
             if (this.findNearestOn(board, x, y).length > 0) return true;
           }
         }
+        // Условие B (на копии)
         const dirs = [
           { axis: 'x', step: +1 },
           { axis: 'x', step: -1 },
@@ -2311,7 +2529,7 @@
         }
         return false;
       }
-
+      // === Подсказка: вычисление пары и управление ===
       bindHintButton() {
         const btn = document.getElementById('hint');
         if (!btn) return;
@@ -2341,6 +2559,7 @@
       startHintCooldown() {
         this._hintCooldownUntil = performance.now() + 1;
         this.updateHintButtonState();
+        // По окончании — вернуть визуал
         setTimeout(() => {
           this.updateHintButtonState();
         }, 2);
@@ -2349,23 +2568,56 @@
       clearSuperHint(skipBtnUpdate) {
         if (this.superHint) {
           const { a, b } = this.superHint;
-          this.getCellEl(a.x, a.y)?.classList.remove('hinted-super');
-          this.getCellEl(b.x, b.y)?.classList.remove('hinted-super');
+          const toClear = [this.getCellEl(a.x, a.y), this.getCellEl(b.x, b.y)].filter(Boolean);
+
+          let idx = 0;
+          const batchSize = 2;
+          const removeBatch = () => {
+            let processed = 0;
+            while (idx < toClear.length && processed < batchSize) {
+              toClear[idx].classList.remove('hinted-super');
+              idx++;
+              processed++;
+            }
+            if (idx < toClear.length) {
+              requestAnimationFrame(removeBatch);
+            }
+          };
+          requestAnimationFrame(removeBatch);
         }
+
         this.superHint = null;
         if (!skipBtnUpdate) this.updateHintButtonState();
+        // Сбрасываем возможный режим выбора
         if (this.state.locked) this.exitSelectionMode();
       }
 
       showSuperHint(pair) {
         this.clearSuperHint(true);
         this.superHint = pair;
-        this.getCellEl(pair.a.x, pair.a.y)?.classList.add('hinted-super');
-        this.getCellEl(pair.b.x, pair.b.y)?.classList.add('hinted-super');
+
+        const toAdd = [this.getCellEl(pair.a.x, pair.a.y), this.getCellEl(pair.b.x, pair.b.y)].filter(Boolean);
+
+        let idx = 0;
+        const batchSize = 2;
+        const addBatch = () => {
+          let processed = 0;
+          while (idx < toAdd.length && processed < batchSize) {
+            toAdd[idx].classList.add('hinted-super');
+            idx++;
+            processed++;
+          }
+          if (idx < toAdd.length) {
+            requestAnimationFrame(addBatch);
+          }
+        };
+        requestAnimationFrame(addBatch);
+
         this.updateHintButtonState();
       }
 
       computeHintPair() {
+        // 1) Сначала ищем прямую пару (условие A)
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
             const color = this.board[y][x];
@@ -2377,6 +2629,7 @@
             }
           }
         }
+        // 2) Если нет — ищем пару после допустимого перемещения (условие B)
         const dirs = [
           { axis: 'x', step: +1 },
           { axis: 'x', step: -1 },
@@ -2396,6 +2649,7 @@
                 const near = this.findNearestOn(b2, nx, ny);
                 if (near.length > 0) {
                   const p = near[0];
+                  // Найти исходные координаты партнёра, если он принадлежал сдвигаемой цепочке
                   let bx = p.x, by = p.y;
                   if (d.axis === 'x' && p.y === y && p.x >= rng.from + s && p.x <= rng.to + s) {
                     bx = p.x - d.step * s;
