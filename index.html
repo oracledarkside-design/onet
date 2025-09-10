@@ -350,6 +350,7 @@
       body { padding:inherit; }
       .hud { flex-wrap: wrap; gap: 8px; padding-top: var(--board-padding);}
       .settings-content {max-height: 80vh;}
+      #board .cell {border-radius: 7px;}
     }
     @media (max-width: 480px) {
       :root { --cell: 34px; --gap: 4px; }
@@ -357,12 +358,14 @@
       .hint { font-size: 12px; }
       .hud {padding-top: var(--board-padding);}
       .settings-content {max-height: 80vh;}
+      #board .cell {border-radius: 6px;}
     }
     @media (max-width: 380px) {
       :root { --cell: 30px; --gap: 3px; }
       body { padding: inherit; }
       .hud {padding-top: var(--board-padding);}
       .settings-content {max-height: 80vh;}
+      #board .cell {border-radius: 5px;}
     }
 
     .slider-container {
@@ -722,17 +725,18 @@
       right: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent 0%, rgba(255, 0, 0, 0.1) 50%, rgba(255, 0, 0, 0.3) 100%);
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 0, 0, 0.25) 50%, rgba(255, 0, 0, 1) 100%);
       display: flex;
       align-items: center;
       justify-content: flex-end;
       padding-right: 12px;
-      color: #ff4444;
+      color: #ffffff #ff4444;
       font-size: 12px;
       font-weight: 600;
       opacity: 0;
       transition: opacity 0.3s;
       pointer-events: none;
+      z-index: 2;
     }
 
     .palette-container.swipeable.swiping .swipe-overlay {
@@ -1149,17 +1153,16 @@
       }
 
  
+
       togglePalettePin(paletteIndex) {
         if (this.pinnedPaletteIndex === paletteIndex) {
-         
-          this.pinnedPaletteIndex = -1;
+          this.pinnedPaletteIndex = -1; // снять закрепление
           showMessage('Палитра откреплена', 'success');
         } else {
-       
-          this.pinnedPaletteIndex = paletteIndex;
+          this.pinnedPaletteIndex = paletteIndex; // закрепить
           showMessage(`Палитра ${paletteIndex + 1} закреплена`, 'success');
         }
-        
+
         this.updateThemePreview();
       }
 
@@ -1225,9 +1228,11 @@
           }
           
           this.updateThemePreview();
+
         }
       }
     }
+
 
     updateThemePreview() {
       const previewContainer = document.getElementById('theme-preview');
@@ -1244,39 +1249,82 @@
       const palettes = themeConfig.themes;
       
       palettes.forEach((palette, paletteIndex) => {
+        const headerWrapper = document.createElement('div');
+        headerWrapper.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin: 8px 0 4px;';
+
         const paletteHeader = document.createElement('div');
         paletteHeader.className = 'palette-header';
+
         const currentPaletteIndex = this.getCurrentPaletteIndex();
         const isCurrentPalette = currentPaletteIndex === paletteIndex;
         const isPinnedPalette = this.pinnedPaletteIndex === paletteIndex;
-        const headerText = `Палитра ${paletteIndex + 1}${isCurrentPalette ? ' (текущая)' : ''}${isPinnedPalette ? ' 📌' : ''}`;
-        paletteHeader.textContent = headerText;
-        paletteHeader.style.cssText = `margin: 8px 0 4px 0; font-size: 12px; color: ${isCurrentPalette ? '#64e0d0' : '#8b9bb4'}; font-weight: ${isCurrentPalette ? '600' : '400'}; cursor: pointer; user-select: none;`;
-        
+
+        // текст заголовка
+        const headerLabel = document.createElement('span');
+        headerLabel.textContent = `Палитра ${paletteIndex + 1}${isCurrentPalette ? ' (текущая)' : ''}`;
+
+        // иконка 📌
+        const pinIcon = document.createElement('span');
+        pinIcon.textContent = ' 📌';
+        pinIcon.style.marginLeft = '6px';
+        pinIcon.style.filter = isPinnedPalette ? 'grayscale(0)' : 'grayscale(100%)';
+        pinIcon.style.transition = 'filter 0.2s ease';
+
+        paletteHeader.appendChild(headerLabel);
+        paletteHeader.appendChild(pinIcon);
+
+        paletteHeader.style.cssText = `
+          font-size: 12px;
+          color: ${isCurrentPalette ? '#64e0d0' : '#8b9bb4'};
+          font-weight: ${isCurrentPalette ? '600' : '400'};
+          cursor: pointer;
+          user-select: none;
+        `;
+
         paletteHeader.addEventListener('click', () => {
           this.togglePalettePin(paletteIndex);
         });
+
+        // кнопка копирования 📋
+        const copyBtn = document.createElement('button');
+        copyBtn.innerHTML = '📋';
+        copyBtn.title = 'Скопировать все цвета';
+        copyBtn.style.cssText = 'background: none; border: none; cursor: pointer; font-size: 14px; padding: 0; color: #8b9bb4;';
         
-        previewContainer.appendChild(paletteHeader);
-        
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation(); // не триггерим togglePalettePin
+          const text = palette.join(', ');
+          navigator.clipboard.writeText(text).then(() => {
+            copyBtn.innerHTML = '✅'; // временно показываем галочку
+            setTimeout(() => { copyBtn.innerHTML = '📋'; }, 1000);
+          });
+        });
+
+        headerWrapper.appendChild(paletteHeader);
+        headerWrapper.appendChild(copyBtn);
+        previewContainer.appendChild(headerWrapper);
+
         const paletteContainer = document.createElement('div');
         paletteContainer.className = 'palette-container';
         const borderColor = isCurrentPalette ? '#64e0d0' : (isPinnedPalette ? '#ffaa00' : '#1f2940');
         const bgColor = isCurrentPalette ? '#1a2130' : (isPinnedPalette ? '#2a1f0a' : '#0a0f1a');
         paletteContainer.style.cssText = `display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; padding: 6px; background: ${bgColor}; border-radius: 6px; border: 1px solid ${borderColor};`;
-        
+
         if (this.currentTheme === 'custom') {
           paletteContainer.classList.add('swipeable');
           paletteContainer.dataset.paletteIndex = paletteIndex;
-          
+
           const swipeOverlay = document.createElement('div');
           swipeOverlay.className = 'swipe-overlay';
           swipeOverlay.textContent = 'Удалить';
-          paletteContainer.appendChild(swipeOverlay);
-          
+
+          // вставляем overlay в начало, чтобы он был "подложкой"
+          paletteContainer.insertBefore(swipeOverlay, paletteContainer.firstChild);
+
           this.addSwipeHandlers(paletteContainer, paletteIndex);
         }
-        
+
+
         palette.forEach((color, colorIndex) => {
           const colorPreview = document.createElement('div');
           colorPreview.className = 'color-preview';
@@ -1284,31 +1332,36 @@
           colorPreview.title = `Палитра ${paletteIndex + 1}, Цвет ${colorIndex + 1}: ${color}`;
           paletteContainer.appendChild(colorPreview);
         });
-        
+
         previewContainer.appendChild(paletteContainer);
       });
     }
+
 
     addSwipeHandlers(element, paletteIndex) {
       let startX = 0;
       let currentX = 0;
       let isSwiping = false;
-      const threshold = 100; 
+
+      const softThreshold = 60;   // «визуальный свайп» (подвинуть, но не удалить)
+      const deleteThreshold = 200; // явный длинный свайп для удаления
 
       const onTouchStart = (e) => {
         startX = e.touches[0].clientX;
+        currentX = startX;
         isSwiping = true;
         element.classList.add('swiping');
+        element.style.transition = 'none';
       };
 
       const onTouchMove = (e) => {
         if (!isSwiping) return;
         currentX = e.touches[0].clientX;
         const deltaX = currentX - startX;
-        
+
         if (deltaX < 0) {
           element.style.transform = `translateX(${deltaX}px)`;
-          element.style.opacity = Math.max(0.3, 1 + deltaX / threshold);
+          element.style.opacity = Math.max(0.4, 1 + deltaX / deleteThreshold);
         }
       };
 
@@ -1316,11 +1369,15 @@
         if (!isSwiping) return;
         isSwiping = false;
         element.classList.remove('swiping');
-        
+        element.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+
         const deltaX = currentX - startX;
-        if (deltaX < -threshold) {
+
+        if (deltaX < -deleteThreshold) {
+          // длинный и явный свайп → удаляем
           this.deleteCustomPalette(paletteIndex);
         } else {
+          // иначе возвращаем назад
           element.style.transform = '';
           element.style.opacity = '';
         }
@@ -1330,6 +1387,7 @@
       element.addEventListener('touchmove', onTouchMove);
       element.addEventListener('touchend', onTouchEnd);
     }
+
 
     deleteCustomPalette(paletteIndex) {
       const paletteContainer = document.querySelector(`[data-palette-index="${paletteIndex}"]`);
@@ -1478,7 +1536,7 @@
 
 
 
-      runInitialReveal(totalMs = 2500, batchSize = 20) {
+      runInitialReveal(totalMs = 2500, batchSize = 10) {
         const cellsToReveal = [];
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
@@ -2851,7 +2909,7 @@
       };
       
 
-      
+
       const themeSelector = document.getElementById('theme-selector');
       themeSelector.onchange = function() {
         const selectedTheme = this.value;
@@ -2865,10 +2923,13 @@
         
         if (game) {
           game.currentTheme = selectedTheme;
+
+          // 🔹 Сброс закрепления при смене темы
+          game.pinnedPaletteIndex = -1;
           game.updateThemePreview();
         }
       };
-      
+
       const customInput = document.getElementById('custom-colors-input');
       if (customInput) {
         customInput.addEventListener('keydown', function(e) {
@@ -2878,8 +2939,9 @@
           }
         });
       }
-      
+
       document.querySelector('.settings-modal').classList.add('active');
+
     }
 
     function closeSettings() {
@@ -2963,29 +3025,30 @@
         }
       }
       
+
       game = new Game(CONFIG);
-      
-        if (pinnedPaletteIndex >= 0) {
-          game.pinnedPaletteIndex = pinnedPaletteIndex;
-          game.theme = game.getCurrentThemeColors();
-          
-          const maxColorsInPalette = game.theme.length;
-          if (maxColors < maxColorsInPalette) {
-            CONFIG.maxColors = maxColorsInPalette;
-            game.maxColors = maxColorsInPalette;
-          } else if (maxColors > maxColorsInPalette) {
-            CONFIG.maxColors = maxColorsInPalette;
-            game.maxColors = maxColorsInPalette;
-          }
-          
-          game.board = game.generateBoard();
-          game.mount();
-          setTimeout(() => game.runInitialReveal(2000), 100);
-          
-          if (maxColors !== game.maxColors) {
-            showMessage(`Количество цветов изменено до ${game.maxColors}`, 'info');
-          }
+
+      if (pinnedPaletteIndex >= 0) {
+        game.pinnedPaletteIndex = pinnedPaletteIndex;
+        game.theme = game.getCurrentThemeColors();
+
+        const maxColorsInPalette = game.theme.length;
+
+        // Ограничиваем только если выбранное значение больше допустимого
+        if (maxColors > maxColorsInPalette) {
+          CONFIG.maxColors = maxColorsInPalette;
+          game.maxColors = maxColorsInPalette;
+          showMessage(`Количество цветов ограничено ${game.maxColors}`, 'info');
+        } else {
+          CONFIG.maxColors = maxColors;
+          game.maxColors = maxColors;
         }
+
+        game.board = game.generateBoard();
+        game.mount();
+        setTimeout(() => game.runInitialReveal(2000), 100);
+      }
+
       
       updateEventHandlers();
       
