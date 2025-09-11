@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-    <meta name="app-version" content="1.001" />
+    <meta name="app-version" content="1.002" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Головоломка</title>
   <style>
@@ -86,6 +86,14 @@
 .cell.filled {
   background-color: var(--color, #2b2f3a);
   /*transition: none;*/ /* Убираем резкую остановку анимации */
+  background-position: center center;
+  /*background-size: 70%;*/
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  /* на случай, если раньше background задавался через background shorthand */
+  /*background-image: none;*/
+  background-size: contain;   /* масштаб по большей стороне */
+  padding: 15%;               /* «уменьшает» рабочее поле, картинка становится меньше блока */
 }
 
 /* Плавный переход включается только для активированных клеток */
@@ -350,7 +358,7 @@
       body { padding:inherit; }
       .hud { flex-wrap: wrap; gap: 8px; padding-top: var(--board-padding);}
       .settings-content {max-height: 80vh;}
-      #board .cell {border-radius: 7px;}
+      #board .cell {border-radius: 7px; }
     }
     @media (max-width: 480px) {
       :root { --cell: 34px; --gap: 4px; }
@@ -872,6 +880,32 @@
           </div>
         </div>
       </div>
+
+      <div class="setting-group">
+        <label class="setting-label">
+          Использовать рисунки: <span class="setting-value" id="settings-useImages">Выключено</span>
+        </label>
+        <div class="slider-container">
+          <input type="range" min="0" max="1" value="1" class="slider" id="useImages-slider">
+          <div class="slider-labels">
+            <span>Выключено</span>
+            <span>Включено</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label">
+          Галерея рисунков: <span class="setting-value" id="settings-room">Комната 1</span>
+        </label>
+        <div class="theme-selector">
+          <select id="room-selector" class="theme-select">
+            <option value="room1">Комната 1</option>
+            <!--option value="future">Скоро..</option-->
+          </select>
+        </div>
+      </div>
+
       
       <div class="setting-group">
         <label class="setting-label">
@@ -914,19 +948,6 @@
           </div>
         </div>
       </div>
-
-<!-- div class="setting-group">
-  <label class="setting-label">
-    Полноэкранный режим: 
-   <label class="toggle">
-      <input type="checkbox" id="fullscreen-toggle">
-      <span class="toggle-slider"></span>
-    </label>
-  </label>
-  
-</div -->
-      
-
       
       <div class="settings-actions">
         <button class="btn-apply" onclick="applySettings()">Применить</button>
@@ -944,7 +965,26 @@
       minPair: 1,       // MIN_pair — минимум пар каждого цвета (редактируемо)
       theme: 'default', 
       fullscreen: false,    
+      useImages: true,       // <-- по умолчанию рисунки выключены
+      currentRoom: 'default', // ключ из AVAILABLE_ROOM
     };
+
+
+    // примеры массивов (файлы лежат в /img)
+    const ROOM1 = [
+      // одна «тема» (напр., набор картинок для комнаты)
+      ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '13.png', '14.png', '15.png', '16.png', '17.png', '18.png', '19.png', '20.png', '21.png']
+    ];
+
+    //const ROOM2 = [
+    //  ['1.png', '2.png'] // пример второй комнаты
+    //];
+
+    const AVAILABLE_ROOM = {
+      'default': { name: 'Комната 1', themes: ROOM1 }//,
+      //'future': { name: 'Скоро.. или никогда..?', themes: ROOM2 },
+    };
+
 
     // Темы цветов
     const THEMES = [
@@ -1078,6 +1118,8 @@
 
         this.theme = this.getCurrentThemeColors();
         // выбрать тему и ограничить число цветов длиной темы
+
+
         this.maxColors = Math.min(maxColors, this.theme.length);
         this.minPair = minPair;
         this.state = {
@@ -1085,6 +1127,12 @@
           source: null,          // {x,y,color}     
           candidates: []             // [{x,y}]
         };
+
+        this.palette = this.getCurrentThemeColors(); // цвета
+        this.roomImages = this.getCurrentRoomImages(); // картинки
+        this.ensureImageModeLimits(); // выставит this.useImages и this.maxColors корректно
+
+
         this.superHint = null;        // { a:{x,y}, b:{x,y} }
         this._hintCooldownUntil = 0;
         this.drag = {
@@ -1231,6 +1279,33 @@
 
         }
       }
+
+      // Инициализация слайдера "Использовать рисунки"
+      const useImagesSlider = document.getElementById('useImages-slider');
+      const useImagesLabel = document.getElementById('settings-useImages');
+
+      useImagesSlider.addEventListener('input', (e) => {
+        CONFIG.useImages = e.target.value === '1'; // true/false
+        useImagesLabel.textContent = CONFIG.useImages ? 'Включено' : 'Выключено';
+
+        // здесь же можно вызвать ограничители и перерисовку
+        game.ensureImageModeLimits();
+        game.redrawAll();
+      });
+
+      // Инициализация селектора "Галерея рисунков"
+      const roomSelector = document.getElementById('room-selector');
+      const roomLabel = document.getElementById('settings-room');
+
+      roomSelector.addEventListener('change', (e) => {
+        CONFIG.currentRoom = e.target.value; // например 'room1'
+        const selectedText = roomSelector.options[roomSelector.selectedIndex].text;
+        roomLabel.textContent = selectedText;
+
+        // тоже обновляем поле/игровое поле
+        game.ensureImageModeLimits();
+        game.redrawAll();
+      });
     }
 
 
@@ -1405,7 +1480,7 @@
       const viewportHeight = window.innerHeight;
       const cellHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cell')) || 56;
       const gapHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 6;
-      const padding = 40; 
+      const padding = 40.5; 
       
       const availableHeight = viewportHeight - padding;
       const maxCells = Math.floor(availableHeight / (cellHeight + gapHeight));
@@ -1462,7 +1537,7 @@
       }
       // === Отрисовка ===
 
-      mount() {
+      mount(cell) {
       const boardEl = document.getElementById('board');
       boardEl.innerHTML = '';
       boardEl.style.setProperty('--width', this.width);
@@ -1490,27 +1565,31 @@
           if (color !== null && color !== undefined) {
             // пока не задаём CSS-переменную --color — клетка остаётся серой,
             // и у неё data-activated = '0' => переходы/блик будут отключены по CSS
+
             cell.classList.add('filled');
             cell.dataset.colorId = String(color);
             cell.dataset.activated = '0';
           } else {
             cell.dataset.activated = '0';
+
           }
 
           cell.addEventListener('click', (e) => this.onCellClick(e, x, y));
           cell.addEventListener('pointerdown', (e) => this.onPointerDown(e, x, y));
+
           boardEl.appendChild(cell);
+
         }
       }
 
       // запуск «включения лампочек»
       this.runInitialReveal(2500);
+
     }
 
 
     #applyColor(cell, colorId, instant = false) {
       const colorHex = this.theme[colorId % this.theme.length];
-
       // общая часть
       cell.classList.add('filled');
       cell.classList.remove('vanish');
@@ -1522,6 +1601,7 @@
         cell.style.transition = 'none';
         cell.dataset.activated = '1';
         cell.style.setProperty('--color', colorHex);
+
         // форс рефлоу, затем восстановим transition
         void cell.offsetWidth;
         cell.style.transition = prevTransition;
@@ -1530,13 +1610,82 @@
         // — это активирует CSS-переходы, определенные в .cell.filled[data-activated="1"]
         cell.dataset.activated = '1';
         cell.style.setProperty('--color', colorHex);
+
       }
+    }
+
+    // вернуть массив файлов для текущей комнаты (одно измерение — список файлов)
+    getCurrentRoomImages() {
+      const roomConfig = AVAILABLE_ROOM[CONFIG.currentRoom];
+      if (!roomConfig || !Array.isArray(roomConfig.themes) || roomConfig.themes.length === 0) return [];
+
+      // выбираем тему одинаково с палитрами (можно закреплять индекс, если нужно)
+      const themes = roomConfig.themes;
+      const idx = (this.pinnedPaletteIndex >= 0 && this.pinnedPaletteIndex < themes.length)
+        ? this.pinnedPaletteIndex
+        : Math.floor(Math.random() * themes.length);
+
+      const selected = themes[idx] || [];
+      // возвращаем копию
+      return Array.isArray(selected) ? selected.slice() : [];
+    }
+
+    // вызываем при старте и при переключении темы/включении режимов
+    ensureImageModeLimits() {
+      this.palette = this.getCurrentThemeColors();     // цвета (как сейчас)
+      this.roomImages = this.getCurrentRoomImages();   // массив файлов, возможно []
+      if (CONFIG.useImages && this.roomImages.length > 0) {
+        // если включены картинки — ограничиваем maxColors числом картинок
+        const available = this.roomImages.length;
+        if (CONFIG.maxColors > available) {
+          CONFIG.maxColors = available;
+          this.maxColors = Math.min(this.maxColors, available);
+          // обновляем слайдер/отображение в UI, если есть
+          const slider = document.getElementById('maxColors-slider');
+          if (slider) {
+            slider.max = available;
+            slider.value = available;
+            document.getElementById('settings-maxColors').textContent = available;
+          }
+          if (typeof showMessage === 'function') {
+            showMessage(`MaxColors уменьшен до ${available} — недостаточно картинок в выбранной галерее`, 'info');
+          }
+        } else {
+          this.maxColors = Math.min(this.maxColors, CONFIG.maxColors);
+        }
+        this.useImages = true;
+      } else {
+        // режим картинок выключен или картинок нет
+        this.useImages = false;
+        this.maxColors = Math.min(this.maxColors, this.palette.length);
+      }
+    }
+
+    // главный хелпер: назначить background-image для одной .cell на основе data-color-id
+    applyImageBackgroundToCell(cell) {
+      // cell.dataset.colorId ожидается как строка числа (0..N)
+      const id = Number(cell.dataset.colorId);
+      if (!this.useImages || !Array.isArray(this.roomImages) || this.roomImages.length === 0) {
+        // снять картинку если режим выключен
+        cell.style.backgroundImage = '';
+        return;
+      }
+      // капаем индекс в доступный диапазон
+      const idx = Math.max(0, Math.min(id, this.roomImages.length - 1));
+      const filename = this.roomImages[idx];
+      // путь — /img/ + имя файла (адаптируй, если у тебя другой путь)
+      const path = `img/${filename}`;
+      cell.style.backgroundImage = `url("${path}")`;
+      //cell.style.backgroundSize = '80%';
+      //cell.style.backgroundPosition = 'center center';
+      //cell.style.backgroundRepeat = 'no-repeat';
+      // оставляем --color как запасной фон (уже в style)
     }
 
 
 
 
-      runInitialReveal(totalMs = 2500, batchSize = 10) {
+      runInitialReveal(totalMs = 2500, batchSize = 10, cell) {
         const cellsToReveal = [];
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
@@ -1579,6 +1728,10 @@
               const colorHex = this.theme[colorId % this.theme.length];
               el.dataset.activated = '1';
               el.style.setProperty('--color', colorHex);
+
+              // применение картинки, если включено
+              this.applyImageBackgroundToCell(el);
+
             }
             this._revealIndex++;
             processed++;
@@ -2036,28 +2189,32 @@
           this.redrawColumn(x0);
           return { x: x0, y: y0 + steps };
         }
+
       }
 
-      redrawRow(y) {
+      redrawRow(y,cell) {
         for (let x = 0; x < this.width; x++) {
           const cell = this.getCellEl(x, y);
           const color = this.board[y][x];
           if (color !== null) {
             this.#applyColor(cell, color, true); // мгновенно для перерисовки
+            this.applyImageBackgroundToCell(cell); //поддерживаем рисунки
           } else {
             this.#clearCellImmediate(cell);
           }
         }
       }
 
-      redrawColumn(x) {
+      redrawColumn(x,cell) {
         for (let y = 0; y < this.height; y++) {
           const cell = this.getCellEl(x, y);
           const color = this.board[y][x];
           if (color !== null) {
             this.#applyColor(cell, color, true); // мгновенно для перерисовки
+            this.applyImageBackgroundToCell(cell); //поддерживаем рисунки 
           } else {
             this.#clearCellImmediate(cell);
+
           }
         }
       }
