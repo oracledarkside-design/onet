@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-    <meta name="app-version" content="1.002" />
+    <meta name="app-version" content="1.004" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>Головоломка</title>
-  <style>
+  <title>Головоломка</title> 
+  <style> /*времееное решение в мета max-width=device-width, initial-scale=0.95, maximum-scale=0.99,*/
     :root {
       --width: 10;                /* редактируемо: ширина поля */
       --height: 10;              /* редактируемо: высота поля */
-      --cell: 56px;             /* размер клетки */
-      --gap: 6px;                /* отступ между клетками */
+      /*--cell: 56px;             /* размер клетки */
+      /*--gap: 6px;                /* отступ между клетками */
       --hl: 120,180,255;        /* базовый цвет подсветки (RGB) */
         --board-padding: 10px; 
           --color-accent-1: #64e0d0;
@@ -20,7 +20,7 @@
     }
 
     body {
-      margin: 0; padding: 20px; background: #0c0f14; color: #e9ecf1;
+      margin: 0; padding: 0px; background: #0c0f14; color: #e9ecf1;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
 
@@ -28,8 +28,9 @@
     body { overscroll-behavior: none; }
     * { -webkit-tap-highlight-color: transparent; }
 
+
     .game {
-      display: grid; grid-template-columns: 1fr; gap: 16px; max-width: calc(
+      display: grid; grid-template-columns: 1fr; row-gap: 5px; max-width: calc(
     var(--width) * var(--cell) +
     (var(--width) - 1) * var(--gap) +
     2 * var(--board-padding)
@@ -53,6 +54,20 @@
     /* Отключаем прокрутку/растяжение при жестах, включаем точные pointer события на мобильных */
     #board { touch-action: none; overscroll-behavior: contain; }
 
+    #board.dimmed {
+      pointer-events: none;     /* блокирует клики */
+      /*opacity: 0.45;            /* затемнение */
+      /*filter: brightness(0.7);
+      user-select: none;*/
+    }
+
+    /*.game.dimmed #board {
+      pointer-events: none;
+      opacity: 0.45;
+      filter: brightness(0.7);
+    } запасной вариант*/
+
+
     #board.dimmed::after {
       content: '';
       position: absolute;
@@ -62,6 +77,29 @@
       border-radius: inherit;
       z-index: 5;
     }
+
+    #board.dimmedclone {
+      pointer-events: none;     /* блокирует клики */
+    }
+
+
+#board.dimmedclone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 5;
+
+  opacity: 0;
+  transition: opacity 0.5s ease; /* плавность */
+}
+
+/* Когда активен dimmedclone — затемнение видно */
+#board.dimmedclone.active::after {
+  opacity: 1;
+}
 
     .cell {
       position: relative;
@@ -115,9 +153,33 @@
   opacity: 0;
 }
 
+/* псевдо-элемент для картинки */
+.cell.filled::before {
+  content: "";
+  position: absolute;
+  inset: 0; /* заполняет всю ячейку */
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain; /* чуть меньше чем блок */
+  margin: 15%;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+
+/* активированная ячейка — картинка плавно проявляется */
+.cell.filled[data-activated="1"]::before {
+  opacity: 1;
+}
+
+.cell.filled::before {
+  background-image: var(--img-url);
+}
+
+
     /* Подсветка источника и кандидатов */
     .cell.source { box-shadow: 0 0 0 1.25px rgba(255,255,255,.8), 0 8px 20px rgba(255,255,255,.15), inset 0 0 10px rgba(255,255,255,.15); z-index: 990;}
-    .cell.candidate { box-shadow: 0 0 0 1.25px rgba(130,200,255,.95), 0 10px 26px rgba(60,170,255,.25), inset 0 0 16px rgba(120,200,255,.25); z-index: 999;}
+    .cell.candidate { box-shadow: 0 0 0 1.25px rgba(130,200,255,.95), 0 10px 26px rgba(60,170,255,.25), inset 0 0 16px rgba(120,200,255,.25); z-index: 999;
+      pointer-events: auto;}
     .cell.row-hl { box-shadow: 0 0 0 1.25px rgba(var(--hl),.6), 0 6px 18px rgba(var(--hl),.18), inset 0 0 0 rgba(0,0,0,0.0); }
     .cell.col-hl { box-shadow: 0 0 0 1.25px rgba(var(--hl),.6), 0 6px 18px rgba(var(--hl),.18), inset 0 0 0 rgba(0,0,0,0.0); }
     /* Подсветка одинаковых блоков при клике */
@@ -142,12 +204,12 @@
     @keyframes explode {
       0% { 
         opacity: 1; 
-        transform: scale(1) rotate(0deg); 
+        transform: scale(0.7) rotate(0deg); 
         filter: brightness(1) saturate(1);
       }
       50% { 
         opacity: 1; 
-        transform: scale(1.3) rotate(180deg); 
+        transform: scale(0.7) rotate(180deg); 
         filter: brightness(1.5) saturate(1.5);
       }
       100% { 
@@ -214,7 +276,7 @@
     button { background:#1c2335; color:#e9ecf1; border:1px solid #2a3550; border-radius:12px; padding:8px 12px; cursor:pointer; }
     button:hover { background:#222c44; }
     button { transition: filter .25s linear, background-color .25s linear, color .25s linear, opacity .25s linear; }
-    #hint.cooldown { filter: brightness(0.7) saturate(0.7); opacity: 0.7; pointer-events: none; }
+    #hint.cooldown, #challenge-mode.cooldown  { filter: brightness(0.7) saturate(0.7); opacity: 0.7; pointer-events: none; }
     /* Подсветка супер-пары (исключительный красный) */
     .cell.filled.hinted-super {
       background-color: rgba(255, 60, 60, .35) !important;
@@ -272,7 +334,7 @@
       border-radius: 16px;
       padding: 24px;
       max-width: 400px;
-      width: 80%;
+      width: 90vw;
       max-height: 80vh;
       overflow-y: auto;
       
@@ -353,15 +415,22 @@
       font-weight: 600;
     }
     /* ===== Адаптация под мобильные (страница полностью помещается на экран) ===== */
+      @media (min-width: 769px) {
+      :root { /*--cell: 56px; /*--gap: 3px;*/ } /* вот с этим небольше проблемки. было --gap: 6 т.е. в 2 раза больше; */
+      body { padding:inherit; }
+      .hud { flex-wrap: wrap; gap: 8px; padding-top: var(--board-padding);}
+      .settings-content {max-height: 80vh;}
+      #board .cell {border-radius: 7px; }
+    }
     @media (max-width: 768px) {
-      :root { --cell: 44px; --gap: 6px; }
+      :root { /*--cell: 44px; /*--gap: 3px;*/ }
       body { padding:inherit; }
       .hud { flex-wrap: wrap; gap: 8px; padding-top: var(--board-padding);}
       .settings-content {max-height: 80vh;}
       #board .cell {border-radius: 7px; }
     }
     @media (max-width: 480px) {
-      :root { --cell: 34px; --gap: 4px; }
+      :root { /*--cell: 34px; /*--gap: 2px;*/ }
       body { padding:inherit; }
       .hint { font-size: 12px; }
       .hud {padding-top: var(--board-padding);}
@@ -369,7 +438,7 @@
       #board .cell {border-radius: 6px;}
     }
     @media (max-width: 380px) {
-      :root { --cell: 30px; --gap: 3px; }
+      :root { /*--cell: 30px; /*--gap: 1.5px;*/ }
       body { padding: inherit; }
       .hud {padding-top: var(--board-padding);}
       .settings-content {max-height: 80vh;}
@@ -758,7 +827,7 @@
     }
     .hud-right {
   display: flex;
-  gap: 12px; 
+  gap: 6px; 
 }
 
 /* Контейнер тоггла */
@@ -811,17 +880,199 @@
 .toggle input:checked + .toggle-slider::before {
   content: "Вкл";
 }
+
+* { box-sizing: border-box; }
+
+.hidden {
+  display: none;
+}
+
+.start-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 4rem;
+  background: none;
+  border: none;
+  color: white;
+  text-shadow: 0 0 10px black;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+  z-index: 20;
+}
+
+.start-btn:hover {
+  opacity: 1;
+}
+
+
+.overlay-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  z-index: 30;
+}
+
+.overlay-message button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.overlay-level {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #0a0f1a;
+  border: 1px solid #1f2940;
+  border-radius: 12px;
+  padding: 20px 28px;
+  color: #e0e6f0;
+  text-align: center;
+  z-index: 50;
+  width: 90%;
+  box-shadow: 0 0 25px rgba(0,0,0,0.8);
+}
+
+.overlay-level-title {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.overlay-level-time {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.overlay-level-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  margin-bottom: 20px;
+  background: #111a2c;
+  border: 1px solid #1f2940;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.overlay-level-btn {
+  padding: 10px 22px;
+  font-size: 1rem;
+  background: #64e0d0;
+  border: none;
+  border-radius: 8px;
+  color: #0a0f1a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.overlay-level-btn:hover {
+  background: #7aebe0;
+}
+
+
+
+.overlay-countdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+}
+
+/* Анимация появления и исчезновения */
+.overlay-countdown.animate {
+  animation: countdownPop 1s ease forwards;
+}
+
+@keyframes countdownPop {
+  0% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+}
+
   </style>
 </head>
 <body>
   <div class="game">
     <div class="hud">
      <div class="hud-left">
-      <button id="hint">Подсказка</button>
-      </div><div class="hud-right">
-      <button id="reset">Перегенерировать</button>
+      <button id="hint" class="btn-settings" style="margin-left: 10px;">Подсказка</button>
+      <button id="back" class="btn-settings hidden" style="margin-left: 10px;">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+      </button>
+
+      </div>
+      <!-- Центральная зона -->
+      <div class="hud-center">
+
+
+
+        
+      </div>
+
+      <div class="hud-right">
+        <!-- Кнопка для включения режима испытания -->
+
+        <button id="challenge-mode" class="btn-settings">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <!-- круг циферблата -->
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+            <!-- стрелка часов -->
+            <line x1="12" y1="12" x2="12" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <!-- стрелка минут -->
+            <line x1="12" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <!-- Таймер (по умолчанию скрыт) -->
+        <span id="timer" class="btn-settings hidden" style="margin-right: 10px; max-height: 32px;">00:00</span>
+      <button id="reset" class="btn-settings">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="white">
+          <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.11-.3 2.15-.82 3.05l1.46 1.46C19.24 14.88 20 13.5 20 12c0-4.42-3.58-8-8-8zm-6.64 3.05L3.9 5.59C2.76 7.12 2 9.06 2 11c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6 0-1.11.3-2.15.82-3.05z"/>
+        </svg>
+        
+      </button>
      
-      <button id="settings" class="btn-settings">
+      <button id="settings" class="btn-settings" style="margin-right: 10px;">
         <svg viewBox="0 0 24 24">
           <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
         </svg>
@@ -829,6 +1080,7 @@
       </button></div>
     </div>
     <div id="board" aria-label="Игровое поле"></div>
+
   </div>
 
   <div class="settings-modal">
@@ -1039,6 +1291,8 @@
     
     
     const STORAGE_KEY = 'blockGameData';
+    //let challengeModeToken = 0;
+      let challengeMode = false;
     
     function saveGameData() {
       if (!CONFIG.saveData) return;
@@ -1112,45 +1366,65 @@
       constructor({ width, height, maxColors, minPair, theme = 'default' }) {
         this.width = width;
         this.height = height;
-        this.size = Math.max(width, height);  // для обратной совместимости
+        this.size = Math.max(width, height);
         this.currentTheme = theme;
-        this.pinnedPaletteIndex = -1; 
+        this.pinnedPaletteIndex = -1;
 
         this.theme = this.getCurrentThemeColors();
-        // выбрать тему и ограничить число цветов длиной темы
-
-
         this.maxColors = Math.min(maxColors, this.theme.length);
         this.minPair = minPair;
+
         this.state = {
-          locked: false,      // когда ждём выбора второго из кандидатов        
-          source: null,          // {x,y,color}     
-          candidates: []             // [{x,y}]
+          locked: false,
+          source: null,
+          candidates: []
         };
 
-        this.palette = this.getCurrentThemeColors(); // цвета
-        this.roomImages = this.getCurrentRoomImages(); // картинки
-        this.ensureImageModeLimits(); // выставит this.useImages и this.maxColors корректно
+        this.palette = this.getCurrentThemeColors();
+        this.roomImages = this.getCurrentRoomImages();
+        this.ensureImageModeLimits();
 
-
-        this.superHint = null;        // { a:{x,y}, b:{x,y} }
+        this.superHint = null;
         this._hintCooldownUntil = 0;
         this.drag = {
           active: false,
           startX: null,
           startY: null,
-          axis: null,             // 'x' | 'y'   
+          axis: null,
           startClientX: 0,
           startClientY: 0,
           thresholdPx: 8,
         };
         this._blockClicksUntil = 0;
-        this.board = this.generateBoard(); // 2D массив цветовых ID или null
-        this.mount();
-        // Фоновая проверка на старте (на случай особых раскладок)
-      setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
-        // Кнопка подсказки
-        this.bindHintButton();
+        this.board = this.generateBoard();
+
+        // >>> добавлено ожидание загрузки картинок <<<
+        if (this.useImages && this.roomImages.length > 0) {
+          this.preloadImages(this.roomImages).then(() => {
+            this.mount();
+            setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
+            this.bindHintButton();
+          });
+        } else {
+          // если картинки выключены — сразу монтируем
+          this.mount();
+          setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
+          this.bindHintButton();
+        }
+      }
+
+
+      // прелоадер для изображений
+      preloadImages(files) {
+        const promises = files.map(filename => {
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(filename);
+            img.onerror = () => resolve(filename); // даже если ошибка — считаем загруженным
+            img.src = `img/${filename}`;
+          });
+        });
+        return Promise.all(promises);
       }
 
       
@@ -1478,15 +1752,31 @@
 
     calculateMaxHeight() {
       const viewportHeight = window.innerHeight;
-      const cellHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cell')) || 56;
-      const gapHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 6;
-      const padding = 40.5; 
-      
-      const availableHeight = viewportHeight - padding;
-      const maxCells = Math.floor(availableHeight / (cellHeight + gapHeight));
-      
-      return Math.max(8, Math.min(20, maxCells)); 
+
+      const root = document.documentElement;
+      const styles = getComputedStyle(root);
+
+      const cellHeight = parseFloat(styles.getPropertyValue('--cell')) || 56;
+      const gapHeight  = parseFloat(styles.getPropertyValue('--gap')) || 6;
+
+      const hud = document.querySelector('.hud');
+      const hudHeight = hud ? hud.offsetHeight : 0;
+
+      const game = document.querySelector('.game');
+      const rowGap = game ? parseFloat(getComputedStyle(game).rowGap) || 0 : 0;
+
+      const outerMargin = 5; // фиксированный запас
+
+      // доступная высота = экран - hud - gap между hud и board - отступы
+      const availableHeight = viewportHeight - hudHeight - rowGap - 2 * outerMargin;
+
+      // формула: cell*N + gap*(N-1) <= availableHeight
+      const maxCells = Math.floor((availableHeight + gapHeight) / (cellHeight + gapHeight));
+
+      // ограничиваем диапазон (например 8–20)
+      return Math.max(8, Math.min(20, maxCells));
     }
+
 
       // === Генерация поля с гарантированными парами ===
       generateBoard() {
@@ -1643,7 +1933,7 @@
           // обновляем слайдер/отображение в UI, если есть
           const slider = document.getElementById('maxColors-slider');
           if (slider) {
-            slider.max = available;
+            //slider.max = available;
             slider.value = available;
             document.getElementById('settings-maxColors').textContent = available;
           }
@@ -1675,17 +1965,17 @@
       const filename = this.roomImages[idx];
       // путь — /img/ + имя файла (адаптируй, если у тебя другой путь)
       const path = `img/${filename}`;
-      cell.style.backgroundImage = `url("${path}")`;
-      //cell.style.backgroundSize = '80%';
-      //cell.style.backgroundPosition = 'center center';
-      //cell.style.backgroundRepeat = 'no-repeat';
-      // оставляем --color как запасной фон (уже в style)
+      //cell.style.backgroundImage = `url("${path}")`;
+cell.style.setProperty('--img-url', `url("${path}")`);
+
+
+
     }
 
 
 
 
-      runInitialReveal(totalMs = 2500, batchSize = 10, cell) {
+      runInitialReveal(totalMs = 2500, batchSize = 5, cell) {
         const cellsToReveal = [];
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
@@ -2287,7 +2577,7 @@
       }
 
 
-      pulseSameColor(x0, y0, batchSize = 4) {
+      pulseSameColor(x0, y0, batchSize = 2) {
         const colorId = this.board[y0][x0];
         if (colorId === null) return;
 
@@ -2306,6 +2596,7 @@
 
         // --- Активация подсветки батчами ---
         let index = 0;
+
         const activateBatch = () => {
           let processed = 0;
           while (index < toPulse.length && processed < batchSize) {
@@ -2424,15 +2715,35 @@
         
         saveGameData();
       }
+
+
       // === Фоновая проверка доступных ходов (условия A и B) ===
+
       checkAndReshuffleIfNoMoves() {
         if (this._animatingReshuffle) return;
         if (this.hasAnyAvailablePair()) return;
+
+        if (game.checkLevelCompleted()) {
+          const finalTime = document.getElementById("timer").textContent;
+          stopTimerOnly();
+
+          if (challengeMode) {
+            showLevelCompleteMessage(finalTime);
+          } else {
+            game.reset();
+            updateEventHandlers();
+          }
+          return;
+        }
+
+
+
         this.showNoMovesMessage();
-          setTimeout(() => {
+        setTimeout(() => {
           this.runWaveReshuffle();
-          }, 500);
+        }, 500);
       }
+
 
       hasAnyAvailablePair() {
         // Условие A: есть прямая пара без перемещений
@@ -2711,6 +3022,9 @@
         }
         // fallback: если не нашли, просто сгенерировать новое поле, сохраняя конфиг
         console.warn('Не удалось быстро подобрать раскладку, генерирую новое поле.');
+
+
+
         return this.generateBoard();
       }
 
@@ -2772,13 +3086,14 @@
       }
 
       startHintCooldown() {
-        this._hintCooldownUntil = performance.now() + 1;
+        const cooldownMs = 5000; // 3 секунды
+        this._hintCooldownUntil = performance.now() + cooldownMs;
         this.updateHintButtonState();
-        // По окончании — вернуть визуал
         setTimeout(() => {
           this.updateHintButtonState();
-        }, 2);
+        }, cooldownMs);
       }
+
 
       clearSuperHint(skipBtnUpdate) {
         if (this.superHint) {
@@ -2909,6 +3224,17 @@
         }
       }
 
+      checkLevelCompleted() {
+        // Проверяем, остались ли какие-то блоки
+        for (let y = 0; y < this.height; y++) {
+          for (let x = 0; x < this.width; x++) {
+            if (this.board[y][x] !== null) return false;
+          }
+        }
+        return true;
+      }
+
+
     }
 
     let game;
@@ -2936,7 +3262,77 @@
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
     document.addEventListener('msfullscreenchange', handleFullscreenChange);
-    
+
+
+let countdownTimeout = null; // id текущего таймера обратного отсчёта
+let countdownToken = 0; // токен для защиты от "устаревших" запусков
+
+function applyDim() {
+  const boardEl = document.getElementById('board');
+  boardEl.classList.add("dimmedclone");
+  requestAnimationFrame(() => {
+    boardEl.classList.add("active");
+  });
+}
+
+function waitForBoardAnimation(boardEl) {
+    return new Promise((resolve) => {
+      const cells = boardEl.querySelectorAll(".cell");
+      let remaining = cells.length;
+
+      if (remaining === 0) {
+        resolve();
+        return;
+      }
+
+      cells.forEach((cell) => {
+        cell.addEventListener("transitionend", function handler(e) {
+          if (
+            e.propertyName === "background-color" ||
+            e.propertyName === "--color"
+          ) {
+            remaining--;
+            cell.removeEventListener("transitionend", handler);
+            if (remaining === 0) resolve();
+          }
+        });
+      });
+    });
+  }
+    // Обратный отсчёт
+function startCountdown() {
+  const boardEl = document.getElementById("board");
+
+  const overlay = document.createElement("div");
+  overlay.id = "countdown-overlay";
+  overlay.className = "overlay-countdown";
+  boardEl.appendChild(overlay);
+
+  const sequence = ["3", "2", "1", "Поехали!"];
+  let index = 0;
+
+  function showNext() {
+    if (index >= sequence.length) {
+      overlay.remove();
+      boardEl.classList.remove("dimmedclone");
+      startTimer();
+      countdownTimeout = null; // очистили
+      return;
+    }
+
+    overlay.textContent = sequence[index];
+    overlay.classList.remove("animate"); 
+    void overlay.offsetWidth;           
+    overlay.classList.add("animate");   
+
+    index++;
+    countdownTimeout = setTimeout(showNext, 1000); // сохраняем id таймера
+  }
+
+  showNext();
+}
+
+
     function handleFullscreenChange() {
       const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
       CONFIG.fullscreen = isFullscreen;
@@ -2951,22 +3347,71 @@
         //showMessage('Полноэкранный режим отключен', 'info');
       }
     }
+    //Исправление отображения , Исправление масштабирования
+    function updateBoardScale() {
+      const root = document.documentElement;
+      const styles = getComputedStyle(root);
+
+      const width = parseInt(styles.getPropertyValue('--width'));      // количество колонок
+      const height = parseInt(styles.getPropertyValue('--height'));    // количество строк
+      const padding = parseInt(styles.getPropertyValue('--board-padding'));
+      const outerMargin = 5; // внешний запас по краям
+
+      const hud = document.querySelector('.hud');
+      const hudHeight = hud ? hud.offsetHeight : 0;
+
+      const game = document.querySelector('.game');
+      const rowGap = game ? parseInt(getComputedStyle(game).rowGap) || 0 : 0;
+
+      // доступная ширина
+      const availW = window.innerWidth - 2 * padding - 2 * outerMargin;
+
+      // доступная высота (минус hud, row-gap и внешние отступы)
+      const availH = window.innerHeight - hudHeight - rowGap - 2 * padding - 2 * outerMargin;
+
+      // соотношение: gap = cell / ratio
+      const ratio = 12;
+
+      // вычисляем возможные размеры
+      const cellFromWidth  = availW / (width + (width - 1) / ratio);
+      const cellFromHeight = availH / (height + (height - 1) / ratio);
+
+      // выбираем минимальное (чтобы точно влезло)
+      const cell = Math.min(cellFromWidth, cellFromHeight);
+      const gap = cell / ratio;
+
+      // применяем
+      root.style.setProperty('--cell', cell + 'px');
+      root.style.setProperty('--gap', gap + 'px');
+
+      // внешний отступ по бокам
+      const board = document.getElementById('board');
+      board.style.margin = `${outerMargin}px auto`;
+    }
+
+    window.addEventListener('load', updateBoardScale);
+    window.addEventListener('resize', updateBoardScale);
+
+
+
+
+    const challengeBtn = document.getElementById("challenge-mode");
 
     function updateEventHandlers() {
-      const resetBtn = document.getElementById('reset');
-      const hintBtn = document.getElementById('hint');
+      const resetBtn = document.getElementById("reset");
+      const hintBtn = document.getElementById("hint");
 
-      const newResetBtn = resetBtn.cloneNode(true);
-      const newHintBtn = hintBtn.cloneNode(true);
+      resetBtn.replaceWith(resetBtn.cloneNode(true));
+      hintBtn.replaceWith(hintBtn.cloneNode(true));
 
-      resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
-      hintBtn.parentNode.replaceChild(newHintBtn, hintBtn);
+      const newResetBtn = document.getElementById("reset");
+      const newHintBtn = document.getElementById("hint");
 
-      newResetBtn.addEventListener('click', () => {
+      newResetBtn.addEventListener("click", () => {
         game.reset();
       });
 
-      newHintBtn.addEventListener('click', () => {
+      newHintBtn.addEventListener("click", () => {
         if (game.state.locked) return;
         if (performance.now() < game._hintCooldownUntil) return;
         if (game.superHint) return;
@@ -2978,25 +3423,34 @@
         }
         game.showSuperHint(pair);
 
-        // Запуск кулдауна
-        const cooldownMs = 5000; // например 5 секунд
+        const cooldownMs = 5000; // 5 секунд
         game._hintCooldownUntil = performance.now() + cooldownMs;
 
+        // Кнопка hint — анимация кулдауна
         newHintBtn.classList.add("cooldown");
         newHintBtn.style.setProperty("--cooldown-time", cooldownMs + "ms");
+        newHintBtn.style.animation = "none";
+        newHintBtn.offsetHeight; // reflow
+        newHintBtn.style.animation = null;
 
-        // Принудительно перезапускаем анимацию
-        const cooldownLayer = newHintBtn;
-        cooldownLayer.style.animation = "none";
-        cooldownLayer.offsetHeight; // триггер reflow
-        cooldownLayer.style.animation = null;
+        // 🚩 Кнопка challenge тоже в кулдаун
+        challengeBtn.classList.add("cooldown");
+        challengeBtn.disabled = true;
 
-        // Убираем класс после окончания кулдауна
         setTimeout(() => {
           newHintBtn.classList.remove("cooldown");
+
+          // Снимаем кулдаун с challenge
+          challengeBtn.classList.remove("cooldown");
+          challengeBtn.disabled = false;
         }, cooldownMs);
       });
+
+      window.hintBtn = newHintBtn;
+      window.resetBtn = newResetBtn;
     }
+
+
 
 
     updateEventHandlers();
@@ -3315,6 +3769,202 @@
         }, 300);
       }, 3000);
     }
+document.addEventListener("DOMContentLoaded", () => {
+    // --- элементы ---
+  const boardEl = document.getElementById("board");
+  const challengeBtn = document.getElementById("challenge-mode");
+  const backBtn = document.getElementById("back");
+  const hintBtn = document.getElementById("hint");
+
+  const settingsBtn = document.getElementById("settings");
+  const resetBtn = document.getElementById("reset");
+
+  const timerEl = document.getElementById("timer");
+  const startBtn = document.getElementById("start-challenge");
+
+  const gameContainer = document.querySelector('.game'); // родитель, редко заменяется
+
+    // Эти элементы могут быть клонированы/заменены функцией updateEventHandlers,
+  // поэтому в местах, где критично, мы заново читаем их через getElementById.
+  const settingsId = "settings";
+  const resetId = "reset";
+  const hintId = "hint";
+
+
+// --- таймер ---
+  let timerInterval = null;
+  let startTime = 0;
+
+
+
+function removeDim() {
+  const boardEl = document.getElementById('board');
+  boardEl.classList.remove("active");
+  boardEl.classList.remove("dimmedclone");
+}
+
+
+    function activateChallengeMode() {
+      settingsBtn.classList.add('hidden');
+      resetBtn.classList.add('hidden');
+      hintBtn.classList.add('hidden');
+      document.getElementById("hint").classList.add('hidden');
+      document.getElementById("reset").classList.add('hidden');
+      challengeBtn.classList.add('hidden');
+      backBtn.classList.remove('hidden');
+      timerEl.classList.remove('hidden');
+
+      challengeMode = true;
+      game.reset();
+      applyDim();
+      updateEventHandlers();
+
+      const myToken = ++countdownToken; // новый токен для этой попытки
+
+      waitForBoardAnimation(document.getElementById("board")).then(() => {
+        // запускаем только если токен не устарел и мы всё ещё в режиме испытания
+        if (challengeMode && myToken === countdownToken) {
+          startCountdown();
+        }
+      });
+    }
+
+
+
+
+    // Кнопка включения режима
+    challengeBtn.addEventListener("click", activateChallengeMode);
+ 
+
+    backBtn.addEventListener("click", () => {
+      challengeMode = false;
+      countdownToken++; // инвалидируем все запланированные отсчёты
+
+      if (countdownTimeout) {
+        clearTimeout(countdownTimeout);
+        countdownTimeout = null;
+      }
+
+      settingsBtn.classList.remove('hidden');
+      document.getElementById("reset").classList.remove('hidden');
+      document.getElementById("hint").classList.remove('hidden');
+
+      backBtn.classList.add("hidden");
+      timerEl.classList.add("hidden");
+      challengeBtn.classList.remove("hidden");
+
+      const boardEl = document.getElementById("board");
+      boardEl.classList.remove("dimmedclone");
+
+      stopAndResetTimer();
+    });
+
+
+
+  });
+
+let timerInterval = null;
+let startTime = 0;
+
+
+function startTimer() {
+  if (timerInterval) return; // чтобы не запускать повторно
+
+  startTime = performance.now();
+  timerInterval = setInterval(updateTimer, 1000); // обновление каждую 1ms
+}
+
+function stopAndResetTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  document.getElementById("timer").textContent = "00:00";
+}
+
+function updateTimer() {
+  const timerEl = document.getElementById("timer");
+  const now = performance.now();
+  const elapsed = now - startTime;
+
+  const minutes = Math.floor(elapsed / 60000);
+  const seconds = Math.floor((elapsed % 60000) / 1000);
+  //const milliseconds = Math.floor(elapsed % 1000);
+
+  timerEl.textContent =
+    String(minutes).padStart(2, "0") +
+    ":" +
+    String(seconds).padStart(2, "0")// +
+    //":" +
+    //String(milliseconds).padStart(3, "0");
+}
+
+
+
+
+
+
+function showLevelCompleteMessage(finalTime) {
+  if (!challengeMode) return;
+
+  const boardEl = document.getElementById("board");
+
+  if (document.getElementById("level-complete")) return;
+
+  const overlay = document.createElement("div");
+  overlay.id = "level-complete";
+  overlay.className = "overlay-level";
+
+  const title = document.createElement("div");
+  title.className = "overlay-level-title";
+  title.textContent = "Испытание пройдено";
+
+  const time = document.createElement("div");
+  time.className = "overlay-level-time";
+  time.textContent = `Время: ${finalTime}`;
+
+  // блок с доп. инфой
+  const info = document.createElement("div");
+  info.className = "overlay-level-info";
+  info.innerHTML = `
+    <div>Размер поля: ${CONFIG.width} x ${CONFIG.height}</div>
+    <div>Количество цветов: ${CONFIG.maxColors}</div>
+    <div>Минимум пар: ${CONFIG.minPair}</div>
+  `;
+
+  const okBtn = document.createElement("button");
+  okBtn.className = "overlay-level-btn";
+  okBtn.textContent = "ОК";
+
+  okBtn.addEventListener("click", () => {
+    overlay.remove();
+    stopAndResetTimer();
+
+    game.reset();
+    updateEventHandlers();
+
+    applyDim();
+    waitForBoardAnimation(boardEl).then(() => {
+      startCountdown();
+    });
+  });
+
+  overlay.appendChild(title);
+  overlay.appendChild(time);
+  overlay.appendChild(info);
+  overlay.appendChild(okBtn);
+  boardEl.appendChild(overlay);
+}
+
+
+
+
+
+
+function stopTimerOnly() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+
 
   </script>
   
