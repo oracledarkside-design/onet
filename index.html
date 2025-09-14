@@ -59,6 +59,7 @@
       /*opacity: 0.45;            /* затемнение */
       /*filter: brightness(0.7);
       user-select: none;*/
+
     }
 
     /*.game.dimmed #board {
@@ -76,6 +77,8 @@
       pointer-events: none;
       border-radius: inherit;
       z-index: 5;
+
+      transition: opacity 0.5s ease; /* плавность */
     }
 
     #board.dimmedclone {
@@ -278,6 +281,8 @@
     button { transition: filter .25s linear, background-color .25s linear, color .25s linear, opacity .25s linear; }
     #hint.cooldown, #challenge-mode.cooldown  { filter: brightness(0.7) saturate(0.7); opacity: 0.7; pointer-events: none; }
     /* Подсветка супер-пары (исключительный красный) */
+
+
     .cell.filled.hinted-super {
       background-color: rgba(255, 60, 60, .35) !important;
       box-shadow: 0 0 0 1.25px rgba(255,80,80,.95), 0 10px 26px rgba(255,60,60,.25), inset 0 0 16px rgba(255,120,120,.25);
@@ -1027,6 +1032,16 @@
     opacity: 0;
   }
 }
+
+#hint.cooldown,
+#challenge-mode.cooldown,
+#back.cooldown {
+  filter: brightness(0.7) saturate(0.7);
+  opacity: 0.7;
+  pointer-events: none;
+  animation: cooldown var(--cooldown-time) linear;
+}
+
 
   </style>
 </head>
@@ -1938,7 +1953,7 @@
             document.getElementById('settings-maxColors').textContent = available;
           }
           if (typeof showMessage === 'function') {
-            showMessage(`MaxColors уменьшен до ${available} — недостаточно картинок в выбранной галерее`, 'info');
+            showMessage(`Количество цветов уменьшено до ${available} — недостаточно картинок в выбранной галерее`, 'info');
           }
         } else {
           this.maxColors = Math.min(this.maxColors, CONFIG.maxColors);
@@ -3433,6 +3448,13 @@ function startCountdown() {
         newHintBtn.offsetHeight; // reflow
         newHintBtn.style.animation = null;
 
+        // Challenge тоже в кулдаун
+        challengeBtn.classList.add("cooldown");
+        challengeBtn.style.setProperty("--cooldown-time", cooldownMs + "ms");
+        challengeBtn.style.animation = "none";
+        challengeBtn.offsetHeight;
+        challengeBtn.style.animation = null;
+
         // 🚩 Кнопка challenge тоже в кулдаун
         challengeBtn.classList.add("cooldown");
         challengeBtn.disabled = true;
@@ -3831,10 +3853,34 @@ function removeDim() {
 
 
 
-
-    // Кнопка включения режима
-    challengeBtn.addEventListener("click", activateChallengeMode);
  
+    // Кнопка включения режима
+    challengeBtn.addEventListener("click", () => {
+      if (challengeBtn.classList.contains("cooldown")) return; // защита
+
+      activateChallengeMode();
+
+      const cooldownMs = 5000;
+
+      // Challenge в кулдаун
+      challengeBtn.classList.add("cooldown");
+      challengeBtn.style.setProperty("--cooldown-time", cooldownMs + "ms");
+      challengeBtn.style.animation = "none";
+      challengeBtn.offsetHeight; // reflow
+      challengeBtn.style.animation = null;
+
+      // Back в кулдаун
+      backBtn.classList.add("cooldown");
+      backBtn.style.setProperty("--cooldown-time", cooldownMs + "ms");
+      backBtn.style.animation = "none";
+      backBtn.offsetHeight;
+      backBtn.style.animation = null;
+
+      setTimeout(() => {
+        challengeBtn.classList.remove("cooldown");
+        backBtn.classList.remove("cooldown");
+      }, cooldownMs);
+    });
 
     backBtn.addEventListener("click", () => {
       challengeMode = false;
@@ -3858,6 +3904,7 @@ function removeDim() {
 
       stopAndResetTimer();
     });
+
 
 
 
