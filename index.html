@@ -1037,7 +1037,7 @@
 #challenge-mode.cooldown,
 #back.cooldown {
   filter: brightness(0.7) saturate(0.7);
-  opacity: 0.7;
+  /*opacity: 0.7;*/
   pointer-events: none;
   animation: cooldown var(--cooldown-time) linear;
 }
@@ -1990,7 +1990,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
 
 
 
-      runInitialReveal(totalMs = 2500, batchSize = 5, cell) {
+      runInitialReveal(totalMs = 2500, batchSize = 16, cell) {
         const cellsToReveal = [];
         for (let y = 0; y < this.height; y++) {
           for (let x = 0; x < this.width; x++) {
@@ -2118,13 +2118,13 @@ cell.style.setProperty('--img-url', `url("${path}")`);
           if (hintForThisAction && isHintedStart) {
             const other = (hintForThisAction.a.x === x && hintForThisAction.a.y === y) ? hintForThisAction.b : hintForThisAction.a;
             // Центрируем все блоки перед удалением супер-пары
-            this.centerAllBlocks();
+            //this.centerAllBlocks(); ИЗБЫТОЧНО 1509
             this.removePair(x, y, other.x, other.y);
             return;
           }
           const boardEl = document.getElementById('board');
           // Центрируем все блоки перед входом в режим выбора
-          this.centerAllBlocks();
+          //this.centerAllBlocks(); ИЗБЫТОЧНО 1509
           this.enterSelectionMode(x, y, preCandidates);
           boardEl.classList.add('dimmed');
           return;
@@ -2197,7 +2197,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
 
         if (!axis) {
           // treat as click - центрируем блоки при клике
-          this.centerAllBlocks();
+          //this.centerAllBlocks(); ИЗБЫТОЧНО ?? 1509
           return;
         }
         const desiredSteps = axis === 'x' ? Math.round(dx / stepPx) : Math.round(dy / stepPx);
@@ -2226,7 +2226,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
           // намеренно должны исчезнуть — но тут нет найденных кандидатов, так что обычный откат корректен.)
           this.restoreChainSnapshot(snapshot, axis, actualSteps);
           // Центрируем все блоки после отката
-          this.centerAllBlocks();
+          //this.centerAllBlocks(); ИЗБЫТОЧНО ?? 1509
           return;
         }
         // Если нашли кандидатов — не откатываем transform: пусть блок останется визуально на месте отпускания.
@@ -2238,7 +2238,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
             // также можно принудительно очистить вспомогательные классы
             if (boardEl) boardEl.classList.remove('noreturn');
             // Центрируем все блоки после очистки preview transforms
-            this.centerAllBlocks();
+            //this.centerAllBlocks();
           }, 0);
         };
         // --- 1 кандидат: удаляем напрямую ---
@@ -2250,7 +2250,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
           this.removePair(nx, ny, tx, ty);
           scheduleClearPreview();
           // Центрируем все блоки после успешного удаления
-          setTimeout(() => this.centerAllBlocks(), 100);
+          //setTimeout(() => this.centerAllBlocks(), 100); ИЗБЫТОЧНО ?? 1509
           return;
         }
         // --- несколько кандидатов — если тянули, начав с подсказанного блока, удалить супер-пару ---
@@ -2274,13 +2274,13 @@ cell.style.setProperty('--img-url', `url("${path}")`);
           this.removePair(nx, ny, px, py);
           scheduleClearPreview();
           // Центрируем все блоки после удаления супер-пары
-          setTimeout(() => this.centerAllBlocks(), 100);
+          //setTimeout(() => this.centerAllBlocks(), 100); ИЗБЫТОЧНО 1509
           return;
         }
         // иначе — режим выбора (selection mode)
         this.enterSelectionMode(nx, ny, candidates);
         if (boardEl) boardEl.classList.add('dimmed');
-        this.centerAllBlocks();
+        //this.centerAllBlocks(); ИЗБЫТОЧНО
         // Примечание: в режиме выбора мы оставляем preview-transform, чтобы игрок видел, где он отпустил блок.
       }
 
@@ -2435,7 +2435,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
           el.classList.remove('dragging');
         }
         this.drag.previewCells = [];
-        this.centerAllBlocks();
+        //this.centerAllBlocks(); ИЗБЫТОЧНО ?? 1509
       }
 
       highlightCross(x0, y0) {
@@ -2554,7 +2554,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
         const color = this.board[y][x];
         if (color === null) return; 
         // Центрируем все блоки при клике (на случай если они были слегка сдвинуты)
-        this.centerAllBlocks();
+        //this.centerAllBlocks(); ИЗБЫТОЧНО ?? 1509
         // Если есть подсказка — мягко сбрасываем (и запускаем кулдаун), но не перехватываем действие
         if (this.superHint) { this.clearSuperHint(false); this.startHintCooldown(); }
         // Если ждём выбора среди кандидатов — принимаем клики только по ним
@@ -2573,7 +2573,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
           // Подсветить все блоки того же цвета мягким пульсом на 1 секунду
           this.pulseSameColor(x, y);
           // Центрируем все блоки при пульсации (нет кандидатов)
-          setTimeout(() => this.centerAllBlocks(), 100);
+          //setTimeout(() => this.centerAllBlocks(), 100); ИЗБЫТОЧНО ?? 1509
           return;
         }
         if (candidates.length === 1) {
@@ -2592,7 +2592,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
       }
 
 
-      pulseSameColor(x0, y0, batchSize = 2) {
+      pulseSameColor(x0, y0, batchSize = 8) {
         const colorId = this.board[y0][x0];
         if (colorId === null) return;
 
@@ -2674,7 +2674,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
         this.state.source = null;
         this.state.candidates = [];
         this.updateHintButtonState();
-        this.centerAllBlocks();
+        //this.centerAllBlocks(); ИЗБЫТОЧНО ??? 1509
       }
       // === Удаление пары ===
       removePair(x1, y1, x2, y2) {
@@ -3116,7 +3116,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
           const toClear = [this.getCellEl(a.x, a.y), this.getCellEl(b.x, b.y)].filter(Boolean);
 
           let idx = 0;
-          const batchSize = 2;
+          const batchSize = 8;
           const removeBatch = () => {
             let processed = 0;
             while (idx < toClear.length && processed < batchSize) {
