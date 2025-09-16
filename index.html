@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-    <meta name="app-version" content="1.004" />
+    <meta name="app-version" content="1.005" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Головоломка</title> 
   <style> /*времееное решение в мета max-width=device-width, initial-scale=0.95, maximum-scale=0.99,*/
@@ -35,7 +35,8 @@
     (var(--width) - 1) * var(--gap) +
     2 * var(--board-padding)
   );
-      width: 100%; margin: 0 auto; 
+     /* min-width: 100%; /*Улучшение CLS*/ 
+      margin: 0 auto; 
     }
 
     .hud { display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -48,7 +49,9 @@
       gap: var(--gap);
       position: relative;
       padding: var(--board-padding); box-sizing: border-box;  border-radius: 16px; background: #0f1522; box-shadow: inset 0 0 0 1px #1f2940, 0 10px 30px rgba(0,0,0,.4);
-      transition: filter .2s ease, opacity .2s ease; width: fit-content; 
+      transition: filter .2s ease, opacity .2s ease; 
+      width: fit-content; 
+      
     }
 
     /* Отключаем прокрутку/растяжение при жестах, включаем точные pointer события на мобильных */
@@ -2098,7 +2101,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
           hintForThisAction = this.superHint;
           // Сбрасываем подсказку и запускаем кулдаун, но не перехватываем действия
           this.clearSuperHint(false);
-          this.startHintCooldown();
+          /*this.startHintCooldown();*/ //расход подсказки при клике
         }
         if (this.state.locked) return;
         const color = this.board[y][x];
@@ -2556,7 +2559,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
         // Центрируем все блоки при клике (на случай если они были слегка сдвинуты)
         //this.centerAllBlocks(); ИЗБЫТОЧНО ?? 1509
         // Если есть подсказка — мягко сбрасываем (и запускаем кулдаун), но не перехватываем действие
-        if (this.superHint) { this.clearSuperHint(false); this.startHintCooldown(); }
+        if (this.superHint) { this.clearSuperHint(false); /*this.startHintCooldown(); расход подсказки при клике*/ }
         // Если ждём выбора среди кандидатов — принимаем клики только по ним
         if (this.state.locked) {
           const isCandidate = cellEl.classList.contains('candidate');
@@ -3132,8 +3135,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
         }
 
         this.superHint = null;
-        if (!skipBtnUpdate) this.updateHintButtonState();
-        // Сбрасываем возможный режим выбора
+
         if (this.state.locked) this.exitSelectionMode();
       }
 
@@ -3158,7 +3160,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
         };
         requestAnimationFrame(addBatch);
 
-        this.updateHintButtonState();
+         this.startHintCooldown(); //this.updateHintButtonState();
       }
 
       computeHintPair() {
@@ -3315,6 +3317,7 @@ function waitForBoardAnimation(boardEl) {
     });
   }
     // Обратный отсчёт
+// Обратный отсчёт
 function startCountdown() {
   const boardEl = document.getElementById("board");
 
@@ -3330,6 +3333,11 @@ function startCountdown() {
     if (index >= sequence.length) {
       overlay.remove();
       boardEl.classList.remove("dimmedclone");
+
+      // ✅ Разблокируем back по завершении отсчёта
+      const backBtn = document.getElementById("back"); // ✅ получаем кнопку возврата
+      backBtn.classList.remove("cooldown");
+
       startTimer();
       countdownTimeout = null; // очистили
       return;
@@ -3341,7 +3349,7 @@ function startCountdown() {
     overlay.classList.add("animate");   
 
     index++;
-    countdownTimeout = setTimeout(showNext, 1000); // сохраняем id таймера
+    countdownTimeout = setTimeout(showNext, 1000);
   }
 
   showNext();
@@ -3869,18 +3877,20 @@ function removeDim() {
       challengeBtn.offsetHeight; // reflow
       challengeBtn.style.animation = null;
 
-      // Back в кулдаун
+      // Back в кулдаун (заблокирован минимум на время отсчёта!)
       backBtn.classList.add("cooldown");
       backBtn.style.setProperty("--cooldown-time", cooldownMs + "ms");
       backBtn.style.animation = "none";
       backBtn.offsetHeight;
       backBtn.style.animation = null;
 
+      // Снимаем кулдаун challenge через 5с
       setTimeout(() => {
         challengeBtn.classList.remove("cooldown");
-        backBtn.classList.remove("cooldown");
+        // backBtn НЕ снимаем тут — его снимает startCountdown()
       }, cooldownMs);
     });
+
 
     backBtn.addEventListener("click", () => {
       challengeMode = false;
@@ -3891,9 +3901,23 @@ function removeDim() {
         countdownTimeout = null;
       }
 
-      settingsBtn.classList.remove('hidden');
-      document.getElementById("reset").classList.remove('hidden');
-      document.getElementById("hint").classList.remove('hidden');
+      // ✅ Проверяем, есть ли окно "Испытание пройдено"
+      const levelCompleteOverlay = document.getElementById("level-complete");
+      if (levelCompleteOverlay) {
+        levelCompleteOverlay.remove();
+
+        // Генерируем новую доску
+        game.reset();
+        updateEventHandlers();
+      }
+
+      // ✅ Закрываем оверлей обратного отсчёта, если был
+      const countdownOverlay = document.getElementById("countdown-overlay");
+      if (countdownOverlay) countdownOverlay.remove();
+
+      settingsBtn.classList.remove("hidden");
+      document.getElementById("reset").classList.remove("hidden");
+      document.getElementById("hint").classList.remove("hidden");
 
       backBtn.classList.add("hidden");
       timerEl.classList.add("hidden");
@@ -3906,10 +3930,7 @@ function removeDim() {
     });
 
 
-
-
-  });
-
+    });
 let timerInterval = null;
 let startTime = 0;
 
@@ -3989,10 +4010,22 @@ function showLevelCompleteMessage(finalTime) {
     updateEventHandlers();
 
     applyDim();
+
+    // 🚩 Явно берём кнопку Back из DOM
+    const backBtn = document.getElementById("back");
+    if (backBtn) {
+      backBtn.classList.add("cooldown");
+      //backBtn.style.setProperty("--cooldown-time", "3000ms"); // можно синхронизировать с 3..2..1
+      backBtn.style.animation = "none";
+      backBtn.offsetHeight;
+      backBtn.style.animation = null;
+    }
+
     waitForBoardAnimation(boardEl).then(() => {
-      startCountdown();
+      startCountdown(); // внутри него разблокируем back
     });
   });
+
 
   overlay.appendChild(title);
   overlay.appendChild(time);
