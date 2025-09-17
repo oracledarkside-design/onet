@@ -1141,12 +1141,13 @@
           Минимум пар: <span class="setting-value" id="settings-minPair">1</span>
         </label>
         <div class="slider-container">
-          <input type="range" min="1" max="4" value="1" class="slider" id="minPair-slider">
+          <input type="range" min="1" max="5" value="1" class="slider" id="minPair-slider">
           <div class="slider-labels">
             <span>1</span>
             <span>2</span>
             <span>3</span>
             <span>4</span>
+            <span>5</span>
           </div>
         </div>
       </div>
@@ -1225,7 +1226,15 @@
       </div>
     </div>
   </div>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PYJ5SM4Z1Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
+  gtag('config', 'G-PYJ5SM4Z1Y');
+</script>
   <script>
     
     const CONFIG = {
@@ -1379,6 +1388,34 @@
 
       }
     }
+
+function parseTimeToSeconds(timeStr) {
+  try {
+    const [minutes, seconds] = timeStr.split(":").map(Number);
+    return minutes * 60 + seconds;
+  } catch (err) {
+    console.warn("⏱ Ошибка при разборе времени:", err);
+    return null;
+  }
+}
+
+
+function sendChallengeCompletedEvent(finalTime) {
+  try {
+    const elapsedSeconds = parseTimeToSeconds(finalTime);
+
+    gtag('event', 'challenge_completed', {
+      time_spent_sec: elapsedSeconds ?? 0,  // если null → подставим 0
+      time_spent_str: finalTime,            // оставим и строку для отладки
+      board_height: CONFIG.height,
+      color_count: CONFIG.maxColors,
+      min_pairs: CONFIG.minPair
+    });
+  } catch (err) {
+    console.warn("⚠️ Ошибка при отправке события challenge_completed:", err);
+  }
+}
+
 
     class Game {
       constructor({ width, height, maxColors, minPair, theme = 'default' }) {
@@ -2741,18 +2778,52 @@ cell.style.setProperty('--img-url', `url("${path}")`);
         if (this._animatingReshuffle) return;
         if (this.hasAnyAvailablePair()) return;
 
-        if (game.checkLevelCompleted()) {
-          const finalTime = document.getElementById("timer").textContent;
-          stopTimerOnly();
 
-          if (challengeMode) {
-            showLevelCompleteMessage(finalTime);
-          } else {
-            game.reset();
-            updateEventHandlers();
+      if (game.checkLevelCompleted()) {
+        const finalTime = document.getElementById("timer").textContent;
+        stopTimerOnly();
+
+        if (challengeMode) {
+          // 🎯 Отправляем событие для испытаний
+          try {
+            const elapsedSeconds = parseTimeToSeconds(finalTime);
+            //console.warn("Отправлено challenge_completed");
+            gtag('event', 'challenge_completed', {
+              time_spent_sec: elapsedSeconds ?? 0,  // если null → 0
+              time_spent_str: finalTime,            // строка на всякий случай
+              board_height: CONFIG.height,
+              color_count: CONFIG.maxColors,
+              min_pairs: CONFIG.minPair
+            });
+          } catch (err) {
+           // console.warn("⚠️ Ошибка при отправке события challenge_completed");
           }
+
+          showLevelCompleteMessage(finalTime);
+        } else {
+          // 🎯 Отправляем событие для простых уровней
+          try {
+            //console.warn("Отправлено level_completed");
+            gtag('event', 'level_completed', {
+              board_height: CONFIG.height,
+              color_count: CONFIG.maxColors,
+              min_pairs: CONFIG.minPair
+            });
+          } catch (err) {
+           // console.warn("⚠️ Ошибка при отправке события level_completed");
+          }
+
+          game.reset();
+          updateEventHandlers();
+        }
+
+
+
+
           return;
         }
+
+
 
 
 
@@ -4047,14 +4118,6 @@ function stopTimerOnly() {
 
 
   </script>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PYJ5SM4Z1Y"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-PYJ5SM4Z1Y');
-</script>
+  
 </body>
 </html>
