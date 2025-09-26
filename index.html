@@ -1,16 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <link rel="manifest" href="manifest.json">
   <meta charset="UTF-8" />
+  <link rel="manifest" href="manifest.json">
     <meta name="app-version" content="1.005" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-
-
-
-<meta name="theme-color" content="#0f1522">
-
-
   <title>Головоломка</title> 
   <style> /*времееное решение в мета max-width=device-width, initial-scale=0.95, maximum-scale=0.99,*/
     :root {
@@ -198,8 +192,8 @@
     /* Подсветка одинаковых блоков при клике */
     .cell.filled.pulse-same { 
       background-color: rgba(var(--hl), .35) !important; 
-      box-shadow: 0 0 0 1.25px rgba(64,224,208,.95), /*
-                  0 0px 0px rgba(64,224,208,.25), /* 0 10 26 */
+      box-shadow: 0 0 0 1.25px rgba(64,224,208,.95), 
+                  0 10px 26px rgba(64,224,208,.25), 
                   inset 0 0 16px rgba(64,224,208,.25);
                   /* плавный откат к исходному состоянию */
   transition-delay: 0s; /* старт сразу */
@@ -295,7 +289,7 @@
 
     .cell.filled.hinted-super {
       background-color: rgba(255, 60, 60, .35) !important;
-      box-shadow: 0 0 0 1.25px rgba(255,80,80,.95),/* 0 0px 0px rgba(255,60,60,.25),*/ inset 0 0 16px rgba(255,120,120,.25);
+      box-shadow: 0 0 0 1.25px rgba(255,80,80,.95), 0 10px 26px rgba(255,60,60,.25), inset 0 0 16px rgba(255,120,120,.25);
     }
     /* Центрированное всплывающее сообщение */
     .overlay-message {
@@ -1922,7 +1916,6 @@ function sendChallengeCompletedEvent(finalTime) {
             cell.dataset.colorId = String(color);
             cell.dataset.activated = '0';
           } else {
-            cell.classList.remove('filled');
             cell.dataset.activated = '0';
 
           }
@@ -1965,7 +1958,6 @@ function sendChallengeCompletedEvent(finalTime) {
         cell.style.setProperty('--color', colorHex);
 
       }
-
     }
 
     // вернуть массив файлов для текущей комнаты (одно измерение — список файлов)
@@ -2107,7 +2099,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
       #clearCell(cell) {
         cell.removeAttribute('style');
         cell.classList.remove('filled', 'candidate', 'source');
-        /*cell.classList.add('vanish');*/
+        cell.classList.add('vanish');
         delete cell.dataset.colorId;
         cell.dataset.activated = '0';
         setTimeout(() => { cell.classList.remove('vanish'); }, 260);
@@ -2737,27 +2729,21 @@ cell.style.setProperty('--img-url', `url("${path}")`);
         // Фоновая проверка: есть ли доступные ходы, иначе перемешать
         setTimeout(() => this.checkAndReshuffleIfNoMoves(), 400);
       }
-      // Анимация удаления блока
+      // Функция для анимации удаления блока с случайным эффектом
       animateCellRemoval(cell) {
         if (!cell) return;
-
-        // Список эффектов
+        // Массив доступных анимаций
         const animations = ['explode', 'fade-out', 'shrink', 'wave-out'];
+        // Выбираем случайную анимацию
         const randomAnimation = animations[Math.floor(Math.random() * animations.length)];
-
+        // Применяем анимацию
         cell.classList.add(randomAnimation);
-
-        const onAnimationEnd = () => {
+        // Убираем анимацию и очищаем ячейку после завершения
+        const animationDuration = this.getAnimationDuration(randomAnimation);
+        setTimeout(() => {
           cell.classList.remove(randomAnimation);
           this.#clearCell(cell);
-          cell.removeEventListener('animationend', onAnimationEnd);
-          cell.removeEventListener('transitionend', onAnimationEnd);
-        };
-
-        // Ловим конец анимации
-        cell.addEventListener('animationend', onAnimationEnd);
-        cell.addEventListener('transitionend', onAnimationEnd);
-
+        }, animationDuration);
       }
       // Получение длительности анимации в миллисекундах
       getAnimationDuration(animationClass) {
@@ -3075,7 +3061,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
               const el = this.getCellEl(x, y);
               const color = this.board[y][x];
               if (color !== null) {
-                /*el.classList.add('filled'); 220925 лишний*/
+                el.classList.add('filled');
                 el.dataset.colorId = String(color);
                 el.dataset.activated = '0';
                 // оставляем серым до «включения»
@@ -3091,7 +3077,7 @@ cell.style.setProperty('--img-url', `url("${path}")`);
             this._animatingReshuffle = false;
             this.state.locked = false;
             this.updateHintButtonState();
-            /*this.centerAllBlocks();*/
+            this.centerAllBlocks();
           }, 750);
         }, lastDelay + 30);
       }
@@ -4142,6 +4128,7 @@ if ("serviceWorker" in navigator) {
     .catch(err => console.error("Ошибка регистрации SW:", err));
 }
 </script>
+
 
 </body>
 </html>
