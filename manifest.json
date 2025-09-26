@@ -1,6 +1,6 @@
 {
-  "name": "Block Puzzle",
-  "short_name": "Blocks",
+  "name": "Головоломка",
+  "short_name": "Головоломка",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0f1522",
@@ -19,3 +19,4 @@
     }
   ]
 }
+
