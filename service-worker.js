@@ -1,4 +1,4 @@
-const CACHE_NAME = "block-game-cache-v1";
+const CACHE_NAME = "block-game-cache-v1.1";
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
@@ -76,3 +76,4 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
