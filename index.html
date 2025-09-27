@@ -6,6 +6,97 @@
     <meta name="app-version" content="1.005" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Головоломка</title> 
+
+  <style>
+  /* Базовый контейнер загрузчика */
+  #game-loader {
+    position: fixed;
+    inset: 0; /* top:0; right:0; bottom:0; left:0; */
+    display: none; /* по умолчанию скрыт — показываем через showLoader() */
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 12, 14);
+    z-index: 9999;
+    -webkit-font-smoothing: antialiased;
+    /*font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;*/
+  }
+
+  /* Внутренний контейнер для центровки и подписи */
+  .loader-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Белый "кубик" — квадрат с лёгкой 3D-подсказкой и мягкой анимацией */
+  .cube {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+    border-radius: 6px;
+    box-shadow:
+      0 10px 20px rgba(0,0,0,0.35),
+      0 2px 6px rgba(0,0,0,0.18);
+    transform: rotateX(18deg) rotateY(-18deg);
+    /* анимация: плавное появление/исчезание + лёгкое качание/масштаб */
+    animation: cube-pulse 1.2s ease-in-out infinite;
+    will-change: opacity, transform;
+  }
+
+  /* Мелкий декоративный отблеск на кубике */
+  .cube::before {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.05) 50%);
+    mix-blend-mode: screen;
+    transform: translateZ(1px);
+    opacity: 0.85;
+  }
+
+  /* Подпись (необязательно отображать, можно скрыть в продакшне) */
+  .loader-label {
+    color: #e6e7e9;
+    font-size: 13px;
+    letter-spacing: 0.2px;
+    opacity: 1;
+  }
+
+  /* Ключевые кадры: мягкий пульс и небольшая ротация */
+  @keyframes cube-pulse {
+    0% {
+      opacity: 0.18;
+      transform: rotateX(16deg) rotateY(-16deg) scale(0.98);
+    }
+    25% {
+      opacity: 0.9;
+      transform: rotateX(18deg) rotateY(-18deg) scale(1.02);
+    }
+    50% {
+      opacity: 1;
+      transform: rotateX(20deg) rotateY(-20deg) scale(1.00);
+    }
+    75% {
+      opacity: 0.9;
+      transform: rotateX(18deg) rotateY(-18deg) scale(1.01);
+    }
+    100% {
+      opacity: 0.18;
+      transform: rotateX(16deg) rotateY(-16deg) scale(0.98);
+    }
+  }
+
+  /* Адаптив: чуть меньше на узких экранах */
+  @media (max-width: 420px) {
+    .cube { width: 34px; height: 34px; border-radius: 5px; }
+    .loader-label { font-size: 12px; }
+  }
+</style>
   <style> /*времееное решение в мета max-width=device-width, initial-scale=0.95, maximum-scale=0.99,*/
     :root {
       --width: 10;                /* редактируемо: ширина поля */
@@ -29,6 +120,8 @@
     body { overscroll-behavior: none; }
     * { -webkit-tap-highlight-color: transparent; }
 
+
+    .pulse-same {will-change: background-color;}
 
     .game {
       display: grid; grid-template-columns: 1fr; row-gap: 5px; max-width: calc(
@@ -117,7 +210,6 @@
       user-select: none;
       outline: none;
       transform: translateZ(0);
-      will-change: transform, background-color;
     }
 
     .cell { -webkit-user-select: none; -ms-user-select: none; }
@@ -1047,9 +1139,20 @@
 }
 
 
+
+
   </style>
 </head>
 <body>
+  <!-- Loader -->
+<div id="game-loader" aria-hidden="true" role="status" aria-live="polite">
+  <div class="loader-inner" aria-hidden="true">
+    <div class="cube" aria-hidden="true"></div>
+    <div class="loader-label">Загрузка...</div>
+  </div>
+</div>
+
+
   <div class="game">
     <div class="hud">
      <div class="hud-left">
@@ -1229,6 +1332,52 @@
   </div>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYJ5SM4Z1Y"></script>
+
+<script>
+  let loaderStartTime = 0;
+
+  window.showLoader = function() {
+    const loader = document.getElementById('game-loader');
+    if (!loader) return;
+    loader.style.display = 'flex';
+    loader.style.opacity = "1";
+    loader.setAttribute('aria-hidden', 'false');
+    loaderStartTime = Date.now();
+  };
+
+    // hideLoader теперь умеет принимать callback
+  window.hideLoader = function(callback) {
+    const loader = document.getElementById('game-loader');
+    if (!loader || loader.style.display === 'none') {
+      // если скрывать нечего — вызываем callback сразу
+      if (typeof callback === "function") callback();
+      return;
+    }
+
+    const elapsed = Date.now() - loaderStartTime;
+    const minDuration = 500; // минимум 0,5 секунд
+
+    const remaining = Math.max(0, minDuration - elapsed);
+    setTimeout(() => {
+      loader.style.transition = "opacity 0.5s ease";
+      loader.style.opacity = "0";
+
+      setTimeout(() => {
+        loader.style.display = 'none';
+        loader.style.transition = "";
+        loader.setAttribute('aria-hidden', 'true');
+
+        if (typeof callback === "function") {
+          callback();
+        }
+      }, 500); // совпадает с transition
+    }, remaining);
+  };
+
+</script>
+
+
+</script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -1419,6 +1568,7 @@ function sendChallengeCompletedEvent(finalTime) {
 
 
     class Game {
+
       constructor({ width, height, maxColors, minPair, theme = 'default' }) {
         this.width = width;
         this.height = height;
@@ -1452,23 +1602,28 @@ function sendChallengeCompletedEvent(finalTime) {
           thresholdPx: 8,
         };
         this._blockClicksUntil = 0;
-        this.board = this.generateBoard();
 
-        // >>> добавлено ожидание загрузки картинок <<<
+        // показываем загрузчик (делегировано глобально)
+        window.showLoader();
+
+        // >>> ожидание загрузки картинок <<<
         if (this.useImages && this.roomImages.length > 0) {
           this.preloadImages(this.roomImages).then(() => {
-            this.mount();
-            setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
-            this.bindHintButton();
+            this.initGame();
           });
         } else {
-          // если картинки выключены — сразу монтируем
-          this.mount();
-          setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
-          this.bindHintButton();
+          this.initGame();
         }
       }
 
+      // запуск после всех подготовок
+      initGame() {
+        this.board = this.generateBoard();  // доску создаём только тут
+        this.mount();
+        /*setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);*/
+        this.bindHintButton();
+
+      }
 
       // прелоадер для изображений
       preloadImages(files) {
@@ -1483,7 +1638,6 @@ function sendChallengeCompletedEvent(finalTime) {
         return Promise.all(promises);
       }
 
-      
       getCurrentThemeColors() {
         const themeConfig = AVAILABLE_THEMES[this.currentTheme];
         if (!themeConfig || !themeConfig.themes || themeConfig.themes.length === 0) {
@@ -1562,7 +1716,8 @@ function sendChallengeCompletedEvent(finalTime) {
           }
         }
         return -1; 
-      }
+    }
+
 
     updateSettingsDisplay() {
       const sizeSlider = document.getElementById('size-slider');
@@ -1842,7 +1997,7 @@ function sendChallengeCompletedEvent(finalTime) {
         const maxPairsPossible = Math.floor(total / (2 * this.maxColors));
         const effectiveMinPair = Math.min(this.minPair, maxPairsPossible);
         if (effectiveMinPair !== this.minPair) {
-          console.warn(`[MIN_pair] скорректировано с ${this.minPair} до ${effectiveMinPair} — иначе не помещается в поле`);
+          //console.warn(`[MIN_pair] скорректировано с ${this.minPair} до ${effectiveMinPair} — иначе не помещается в поле`);
           this.minPair = effectiveMinPair;
           CONFIG.minPair = effectiveMinPair;
         }
@@ -1929,7 +2084,10 @@ function sendChallengeCompletedEvent(finalTime) {
       }
 
       // запуск «включения лампочек»
-      this.runInitialReveal(2500);
+      //this.runInitialReveal(2500);
+              window.hideLoader(() => {
+          this.runInitialReveal(2500);
+        });
 
     }
 
@@ -1994,7 +2152,7 @@ function sendChallengeCompletedEvent(finalTime) {
             document.getElementById('settings-maxColors').textContent = available;
           }
           if (typeof showMessage === 'function') {
-            showMessage(`Количество цветов уменьшено до ${available} — недостаточно картинок в выбранной галерее`, 'info');
+            //showMessage(`Количество цветов уменьшено до ${available} — недостаточно картинок в выбранной галерее`, 'info');
           }
         } else {
           this.maxColors = Math.min(this.maxColors, CONFIG.maxColors);
@@ -3581,7 +3739,7 @@ function startCountdown() {
             setTimeout(() => game.runInitialReveal(2000), 100);
             
             if (CONFIG.maxColors !== game.maxColors) {
-              showMessage(`Количество цветов изменено до ${game.maxColors}`, 'info');
+              //showMessage(`Количество цветов изменено до ${game.maxColors}`, 'info');
             }
           }
           
@@ -3691,7 +3849,7 @@ function startCountdown() {
       const maxHeight = game.calculateMaxHeight();
       if (height > maxHeight) {
         height = maxHeight - 1; 
-        console.warn(`Высота ограничена до ${height} для корректного отображения`);
+        //console.warn(`Высота ограничена до ${height} для корректного отображения`);
       }
       
       const pinnedPaletteIndex = game ? game.pinnedPaletteIndex : -1;
