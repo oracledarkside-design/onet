@@ -1,4 +1,4 @@
-const CACHE_NAME = "block-game-cache-v4";
+const CACHE_NAME = "block-game-cache-v5";
 const URLS_TO_CACHE = [
   "/index.html",
   "/manifest.json",
@@ -56,5 +56,6 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
 
 
