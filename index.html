@@ -1667,7 +1667,8 @@ function sendChallengeCompletedEvent(finalTime) {
       time_spent_str: finalTime,            // оставим и строку для отладки
       board_height: CONFIG.height,
       color_count: CONFIG.maxColors,
-      min_pairs: CONFIG.minPair
+      min_pairs: CONFIG.minPair,
+      room: CONFIG.currentRoom 
     });
   } catch (err) {
     console.warn("⚠️ Ошибка при отправке события challenge_completed:", err);
@@ -3133,7 +3134,8 @@ applyImageBackgroundToCell(cell) {
               time_spent_str: finalTime,            // строка на всякий случай
               board_height: CONFIG.height,
               color_count: CONFIG.maxColors,
-              min_pairs: CONFIG.minPair
+              min_pairs: CONFIG.minPair,
+              room: CONFIG.currentRoom 
             });
           } catch (err) {
            // console.warn("⚠️ Ошибка при отправке события challenge_completed");
@@ -4081,14 +4083,6 @@ function startCountdown() {
         setTimeout(() => game.runInitialReveal(2000), 100);
       }
 
-// 🔹 отправляем тег комнаты в gtag
-if (typeof gtag === "function") {
-  gtag('config', 'G-PYJ5SM4Z1Y', {
-    'page_path': '/' + CONFIG.currentRoom
-  });
-}
-
-
       updateEventHandlers();
       saveGameData();
       closeSettings();
@@ -4459,6 +4453,7 @@ if ("serviceWorker" in navigator) {
 </body>
 
 </html>
+
 
 
 
