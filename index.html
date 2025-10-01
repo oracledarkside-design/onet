@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Головоломка</title> 
 
@@ -4445,7 +4446,7 @@ function stopTimerOnly() {
 
   <script>
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/service-worker.js")
+  navigator.serviceWorker.register("/onet/service-worker.js")
     .then(() => console.log("Service Worker зарегистрирован"))
     .catch(err => console.error("Ошибка регистрации SW:", err));
 }
@@ -4458,4 +4459,5 @@ if ("serviceWorker" in navigator) {
 </body>
 
 </html>
+
 
