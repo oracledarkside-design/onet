@@ -1,35 +1,14 @@
-const CACHE_NAME = "block-game-cache-v1.1";
+const CACHE_NAME = "block-game-cache-v2";
 const URLS_TO_CACHE = [
-  "/",
   "/index.html",
   "/manifest.json",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
-    "/img/1.png",
-      "/img/2.png",
-        "/img/3.png",
-          "/img/4.png",
-            "/img/5.png",
-              "/img/6.png",
-                "/img/7.png",
-                  "/img/8.png",
-                    "/img/9.png",
-                      "/img/10.png",
-                        "/img/11.png",
-                          "/img/12.png",
-                            "/img/13.png",
-                              "/img/14.png",
-                                "/img/15.png",
-                                  "/img/16.png",
-                                    "/img/17.png",
-                                      "/img/18.png",
-                                        "/img/19.png",
-                                          "/img/20.png",
-                                            "/img/21.png",
 ];
 
 // Установка и кэширование базовых файлов
 self.addEventListener("install", (event) => {
+  self.skipWaiting(); // ⚡️ активируем сразу после установки
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(URLS_TO_CACHE);
@@ -48,6 +27,7 @@ self.addEventListener("activate", (event) => {
       );
     })
   );
+  self.clients.claim(); // ⚡️ новый SW управляет всеми вкладками
 });
 
 // Перехват запросов
@@ -76,4 +56,3 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
-
