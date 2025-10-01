@@ -1,4 +1,4 @@
-const CACHE_NAME = "block-game-cache-v6";
+const CACHE_NAME = "block-game-cache-v7";
 const URLS_TO_CACHE = [
   "/onet/",
   "/onet/index.html",
@@ -58,6 +58,7 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
 
 
 
