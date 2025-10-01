@@ -1,6 +1,7 @@
 {
   "name": "Головоломка",
   "short_name": "Головоломка",
+  "id": "/onet/",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0f1522",
@@ -20,5 +21,6 @@
   ],
   "categories": ["game"]
 }
+
 
 
