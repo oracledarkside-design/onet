@@ -1,7 +1,8 @@
-const CACHE_NAME = "block-game-cache-v5";
+const CACHE_NAME = "block-game-cache-v6";
 const URLS_TO_CACHE = [
   "/index.html",
   "/manifest.json",
+  "/favicon.ico",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
 ];
@@ -56,6 +57,7 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
 
 
 
