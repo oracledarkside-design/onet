@@ -1,4 +1,4 @@
-const CACHE_NAME = "block-game-cache-v2";
+const CACHE_NAME = "block-game-cache-v2.1";
 const URLS_TO_CACHE = [
   "/index.html",
   "/manifest.json",
