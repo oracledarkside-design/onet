@@ -1,11 +1,11 @@
 const CACHE_NAME = "block-game-cache-v6";
 const URLS_TO_CACHE = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/favicon.ico",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
+  "/onet/",
+  "/onet/index.html",
+  "/onet/manifest.json",
+  "/onet/favicon.ico",
+  "/onet/icons/icon-192.png",
+  "/onet/icons/icon-512.png",
 ];
 
 // Установка и кэширование базовых файлов
@@ -58,6 +58,7 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
 
 
 
