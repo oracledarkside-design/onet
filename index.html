@@ -1314,7 +1314,18 @@
   </div>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYJ5SM4Z1Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
 
+  gtag('js', new Date());
+  gtag('config', 'G-PYJ5SM4Z1Y', {
+    'storage': 'none',               
+    'anonymize_ip': true,            
+    'allow_ad_personalization_signals': false, 
+    'allow_google_signals': false,   
+  });
+</script>
 <script>
   let loaderStartTime = 0;
 
@@ -3149,7 +3160,8 @@ applyImageBackgroundToCell(cell) {
             gtag('event', 'level_completed', {
               board_height: CONFIG.height,
               color_count: CONFIG.maxColors,
-              min_pairs: CONFIG.minPair
+              min_pairs: CONFIG.minPair,
+              room: CONFIG.currentRoom 
             });
           } catch (err) {
            // console.warn("⚠️ Ошибка при отправке события level_completed");
@@ -4453,6 +4465,7 @@ if ("serviceWorker" in navigator) {
 </body>
 
 </html>
+
 
 
 
