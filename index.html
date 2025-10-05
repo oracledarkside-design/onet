@@ -403,6 +403,7 @@
       display: none;
       justify-content: center;
       align-items: center;
+    
       z-index: 1000;
     }
 
@@ -530,6 +531,7 @@
     .slider-container {
       position: relative;
       margin-top: 8px;
+      padding: 0 12px 0 12px;
     }
 
     .slider {
@@ -1123,6 +1125,305 @@
 
 
   </style>
+ 
+  <style type="text/css">
+    .settings-content {
+  display: flex;
+  flex-direction: column;
+  background: #0f1522;
+  border: 1px solid #1f2940;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 90vw;
+  overflow: hidden;
+      min-height: 80vh;
+}
+
+/* Вкладки */
+.settings-tabs {
+  border-bottom: 1px solid #1f2940;
+  margin: 0px;
+  /*overflow-x: auto;
+      overflow-y: clip;*/
+  white-space: nowrap;
+  padding: 0px;
+        scrollbar-color:  var(--color-accent-2-SCRLBR);
+        scrollbar-width: thin;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 6px;
+  min-width: fit-content;
+  padding-bottom: 10px;
+}
+
+.tab-button {
+
+  background: #1a2130;
+  color: #ccc;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: 0.2s;
+  font-size: 14px;
+}
+
+.tab-button.active {
+  background: #64e0d0;
+  color: #0f1522;
+  /*font-weight: 600;*/
+}
+
+/* Прокручиваемая часть */
+div.settings-content .settings-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px 12px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #64e0d0 #1a2130;   margin-top: 20px;
+}
+
+.settings-scroll::-webkit-scrollbar {
+  width: 6px;
+  margin-top: 20px;
+}
+.settings-scroll::-webkit-scrollbar-track {
+  background: #1a2130;
+  border-radius: 3px;   margin-top: 20px;
+}
+.settings-scroll::-webkit-scrollbar-thumb {
+  background: #64e0d0;
+  border-radius: 3px;   margin-top: 20px;
+}
+.settings-scroll::-webkit-scrollbar-thumb:hover {
+  background: #7aebe0;   margin-top: 20px;
+}
+
+/* Футер */
+.settings-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  /*padding: 12px 24px 16px 24px;
+  background: rgba(10, 14, 22, 0.95);
+  border-top: 1px solid #1f2940;
+  border-radius: 0 0 16px 16px;*/
+  margin-top: 20px;
+}
+.settings-footer {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  background:  rgb(15,21,34,1); /* цвет фона футера */
+}
+
+/* Добавляем градиент сверху футера */
+.settings-footer::before {
+  content: "";
+  position: absolute;
+  top: -50px; /* высота градиента над футером */
+  left: 0;
+  width: 100%;
+  height: 30px;
+  /*background: linear-gradient(to bottom, rgba(15,21,34,0) 0%, rgba(15,21,34,1) 100%);*/
+  background: linear-gradient(
+    to bottom,
+    rgba(15,21,34,0) 0%,        /* полностью прозрачный верх */
+    rgba(15,21,34,0.7) 50%,     /* полупрозрачный середина */
+    rgba(15,21,34,1) 100%       /* полностью видимый низ (цвет футера) */
+  );
+  pointer-events: none; /* чтобы не мешал кликам */
+}
+
+.btn-apply,
+.btn-cancel {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;*/
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-apply {
+  background: #64e0d0;
+  color: #0f1522;
+}
+.btn-apply:hover {
+  background: #7aebe0;
+}
+
+.btn-cancel {
+  background: #1a2130;
+  color: #e9ecf1;
+}
+.btn-cancel:hover {
+  background: #222a3a;
+}
+
+/* Содержимое вкладок */
+.tab-pane {
+  display: none;
+  animation: fadeIn 0.2s ease;
+}
+.tab-pane.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+  </style>
+  <style type="text/css">
+    /*.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85em;
+  user-select: none;
+}
+.slider-labels span {
+  flex: 1;
+  text-align: center;
+}*/
+
+  </style>
+  <style type="text/css">
+
+.slider-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8b9bb4;
+}
+
+.slider-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #64e0d0;
+  cursor: pointer;
+}
+
+
+/*/ */
+.slider-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-with-checkbox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Подогнать подписи под шкалу */
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #8b9bb4;
+}
+
+/* Стиль чекбокса */
+.slider-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #8b9bb4;
+}
+
+.slider-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #64e0d0;
+  cursor: pointer;
+}
+
+  </style>
+
+  <style>
+.game-stats { 
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /*margin-top: 10px;*/
+  /*font-family: "Segoe UI", sans-serif;*/
+  font-size: 14px;
+}
+.stat-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.stat-label {
+  font-weight: 600;
+  color: #ccc;
+}
+.stat-value {
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+.stat-value.easy { color: #4CAF50; }    /* зелёный */
+.stat-value.normal { color: #FFC107; }  /* жёлтый */
+.stat-value.hard { color: #FF5722; }    /* оранжевый */
+.stat-value.extreme { color: #E91E63; } /* розово-красный */
+
+
+.slider-checkbox-row {
+  display: flex;
+  align-items: flex-start; /* Выравнивание по верху */
+  gap: 8px;
+}
+
+.slider-with-checkbox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #8b9bb4;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  flex-direction: column; /* подпись под чекбоксом */
+  align-items: center;
+  font-size: 12px;
+  color: #8b9bb4;
+  margin-top: 3px;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #64e0d0;
+  cursor: pointer;
+}
+
+.checkbox-label {
+  margin-top: 2px;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+</style>
 </head>
 <body>
   <!-- Loader -->
@@ -1186,134 +1487,185 @@
 
   </div>
 
-  <div class="settings-modal">
-    <div class="settings-content">
-      <div class="settings-header">
-        <h2 class="settings-title">Настройки игры</h2>
-        <button class="settings-close" onclick="closeSettings()">×</button>
-      </div>
-      
-      <div class="setting-group">
-        <label class="setting-label">
-          Размер поля: <span class="setting-value" id="settings-size">10×10</span>
-        </label>
-        <div class="slider-container">
-          <input type="range" min="0" max="3" value="0" class="slider" id="size-slider">
-          <div class="size-slider-labels">
-            <span class="auto">auto</span>
-            <span>10×10</span>
-            <span>10×15</span>
-            <span>10×20</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="setting-group">
-        <label class="setting-label">
-          Количество цветов: <span class="setting-value" id="settings-maxColors">20</span>
-        </label>
-        <div class="slider-container">
-          <input type="range" min="15" max="29" value="20" class="slider" id="maxColors-slider">
-          <div class="slider-labels">
-            <span>15</span>
-            <span>29</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="setting-group">
-        <label class="setting-label">
-          Минимум пар: <span class="setting-value" id="settings-minPair">1</span>
-        </label>
-        <div class="slider-container">
-          <input type="range" min="1" max="5" value="1" class="slider" id="minPair-slider">
-          <div class="slider-labels">
-            <span>1</span>
-            <span>2</span>
-            <span>3</span>
-            <span>4</span>
-            <span>5</span>
-          </div>
-        </div>
-      </div>
+<div class="settings-modal">
+  <div class="settings-content">
+    <div class="settings-header">
+      <h2 class="settings-title">Настройки игры</h2>
+      <button class="settings-close" onclick="closeSettings()">×</button>
+    </div>
 
-      <div class="setting-group">
-        <label class="setting-label">
-          Использовать рисунки: <span class="setting-value" id="settings-useImages">Включено</span>
-        </label>
-        <div class="slider-container">
-          <input type="range" min="0" max="1" value="1" class="slider" id="useImages-slider">
-          <div class="slider-labels">
-            <span>Выключено</span>
-            <span>Включено</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="setting-group">
-        <label class="setting-label">
-          Галерея рисунков: <span class="setting-value" id="settings-room">Комната 1</span>
-        </label>
-        <div class="theme-selector">
-          <select id="room-selector" class="theme-select">
-            <option value="room1">Комната 1</option>
-            <option value="room2">Комната 2</option>
-            <!--option value="future">Скоро..</option-->
-          </select>
-        </div>
-      </div>
-
-      
-      <div class="setting-group">
-        <label class="setting-label">
-          Тема палитры: <span class="setting-value" id="settings-theme">По умолчанию</span>
-        </label>
-        <div class="theme-selector">
-          <select id="theme-selector" class="theme-select">
-            <option value="default">По умолчанию</option>
-            <option value="mononight">Одноцветная ночь</option>
-            <option value="bright">Другие темы</option>
-            <option value="custom">Пользовательская</option>
-          </select>
-        </div>
-        <div class="theme-preview" id="theme-preview">
-
-        </div>
-        
-
-        <div class="custom-theme-input" id="custom-theme-input" style="display: none;">
-          <div class="input-header">
-            <label class="setting-label">Введите цвета</label>
-            <button class="btn-clear-custom" onclick="clearCustomTheme()">Очистить</button>
-          </div>
-          <textarea id="custom-colors-input" placeholder="#ff0000, #00ff00, #0000ff" rows="3"></textarea>
-          <div class="input-actions">
-            <button class="btn-add-custom" onclick="addCustomColors()">Добавить цвета</button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="setting-group">
-        <label class="setting-label">
-          Полноэкранный режим: <span class="setting-value" id="settings-fullscreen">Выключен</span>
-        </label>
-        <div class="slider-container">
-          <input type="range" min="0" max="1" value="0" class="slider" id="fullscreen-slider">
-          <div class="slider-labels">
-            <span>Выключен</span>
-            <span>Включен</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="settings-actions">
-        <button class="btn-apply" onclick="applySettings()">Применить</button>
-        <button class="btn-cancel" onclick="closeSettings()">Отмена</button>
+    <!-- Вкладки -->
+    <div class="settings-tabs">
+      <div class="tab-buttons" id="tab-buttons">
+        <button class="tab-button active" data-tab="game">Основные</button>
+        <button class="tab-button" data-tab="appearance">Оформление</button>
+        <button class="tab-button" data-tab="system">Прочее</button>
       </div>
     </div>
+
+    <!-- Прокручиваемая часть -->
+    <div class="settings-scroll">
+      <div class="tab-content">
+        <!-- Вкладка: Игра -->
+        <div class="tab-pane active" id="tab-game">
+<div class="setting-group">
+<div class="game-stats">
+  <div class="stat-item">
+    <span class="stat-label">Сложность:</span>
+    <span id="difficulty-name" class="stat-value">—</span>
   </div>
+  <div class="stat-item">
+    <span class="stat-label">Расчётное время:</span>
+    <span id="duration-value" class="stat-value">—</span>
+  </div>
+</div>
+</div>
+
+<div class="setting-group">
+  <label class="setting-label">
+    Размер поля: <span class="setting-value" id="settings-size">10×10</span>
+  </label>
+  <div class="slider-checkbox-row">
+    <div class="slider-container slider-with-checkbox">
+      <input type="range" min="0" max="3" value="0" class="slider" id="size-slider">
+      <div class="size-slider-labels">
+        <span>auto</span>
+        <span>10×10</span>
+        <span>10×15</span>
+        <span>10×20</span>
+      </div>
+    </div>
+    <div class="checkbox-wrapper">
+      <input type="checkbox" id="size-maxCheck">
+      <span class="checkbox-label">max</span>
+    </div>
+  </div>
+</div>
+
+<div class="setting-group">
+  <label class="setting-label">
+    Количество цветов: <span class="setting-value" id="settings-maxColors">20</span>
+  </label>
+  <div class="slider-checkbox-row">
+    <div class="slider-container slider-with-checkbox">
+      <input type="range" class="slider" id="maxColors-slider">
+      <div class="slider-labels">
+        <span id="maxColors-minLabel"></span>
+        <span id="maxColors-maxLabel"></span>
+      </div>
+    </div>
+    <div class="checkbox-wrapper">
+      <input type="checkbox" id="maxColors-maxCheck">
+      <span class="checkbox-label">max</span>
+    </div>
+  </div>
+</div>
+
+
+<div class="setting-group">
+  <label class="setting-label">
+    Минимум пар: <span class="setting-value" id="settings-minPair">1</span>
+  </label>
+  <div class="slider-checkbox-row">
+    <div class="slider-container slider-with-checkbox">
+      <input type="range" class="slider" id="minPair-slider">
+      <div class="slider-labels">
+        <span id="minPair-minLabel"></span>
+        <span id="minPair-maxLabel"></span>
+      </div>
+    </div>
+    <div class="checkbox-wrapper">
+      <input type="checkbox" id="minPair-maxCheck">
+      <span class="checkbox-label">max</span>
+    </div>
+  </div>
+</div>
+</div>
+
+        <!-- Вкладка: Оформление -->
+        <div class="tab-pane" id="tab-appearance">
+          <div class="setting-group">
+            <label class="setting-label">
+              Использовать рисунки: <span class="setting-value" id="settings-useImages">Включено</span>
+            </label>
+            <div class="slider-container">
+              <input type="range" min="0" max="1" value="1" class="slider" id="useImages-slider">
+              <div class="slider-labels"><span>Выключено</span><span>Включено</span></div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">Галерея рисунков: <span class="setting-value" id="settings-room"></span></label>
+            <select id="room-selector" class="theme-select">
+              <option value="room1">"Сказания о..." (24)</option>
+              <option value="room2">"Осенний вайб" (29)</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">Тема палитры: <span class="setting-value" id="settings-theme">По умолчанию</span></label>
+            <select id="theme-selector" class="theme-select">
+              <option value="default">По умолчанию</option>
+              <option value="mononight">Одноцветная ночь</option>
+              <option value="bright">Другие темы</option>
+              <option value="custom">Пользовательская</option>
+            </select>
+
+            <div class="theme-preview" id="theme-preview"></div>
+
+            <div class="custom-theme-input" id="custom-theme-input" style="display:none;">
+              <div class="input-header">
+                <label class="setting-label">Введите цвета</label>
+                <button class="btn-clear-custom" onclick="clearCustomTheme()">Очистить</button>
+              </div>
+              <textarea id="custom-colors-input" placeholder="#ff0000, #00ff00, #0000ff" rows="3"></textarea>
+              <div class="input-actions">
+                <button class="btn-add-custom" onclick="addCustomColors()">Добавить цвета</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Вкладка: Система -->
+        <div class="tab-pane" id="tab-system">
+          <div class="setting-group">
+            <label class="setting-label">
+              Полноэкранный режим: <span class="setting-value" id="settings-fullscreen">Выключен</span>
+            </label>
+            <div class="slider-container">
+              <input type="range" min="0" max="1" value="0" class="slider" id="fullscreen-slider">
+              <div class="slider-labels"><span>Выключен</span><span>Включен</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Фиксированный футер -->
+    <div class="settings-footer">
+      <button class="btn-apply" onclick="applySettings()">Применить</button>
+      <button class="btn-cancel" onclick="closeSettings()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  document.querySelectorAll('.tab-button').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+    button.classList.add('active');
+    document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
+  });
+});
+
+</script>
+
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYJ5SM4Z1Y"></script>
+
+
 <script>
   let loaderStartTime = 0;
 
@@ -1449,13 +1801,7 @@ const ImageDB = {
 
 
 </script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-PYJ5SM4Z1Y');
-</script>
   <script>
     
     const CONFIG = {
@@ -1684,6 +2030,7 @@ function sendChallengeCompletedEvent(finalTime) {
         this.currentTheme = theme;
         this.pinnedPaletteIndex = -1;
 
+
         this.useImages = CONFIG.useImages;
         this.currentRoom = CONFIG.currentRoom || 'room1';
 
@@ -1850,6 +2197,7 @@ function sendChallengeCompletedEvent(finalTime) {
           
             this.pinnedPaletteIndex = -1;
             showMessage('Закрепленная палитра недоступна в новой теме', 'info');
+
           }
         }
         
@@ -1891,68 +2239,107 @@ function sendChallengeCompletedEvent(finalTime) {
         }
         return -1; 
     }
+updateSettingsDisplay() {
 
 
-    updateSettingsDisplay() {
-      const sizeSlider = document.getElementById('size-slider');
-      const maxColorsSlider = document.getElementById('maxColors-slider');
-      const minPairSlider = document.getElementById('minPair-slider');
-      
-      if (sizeSlider && maxColorsSlider && minPairSlider) {
-        const currentSize = `${this.width}x${this.height}`;
-        const sizeMap = { '10x10': 1, '10x15': 2, '10x20': 3 };
-        sizeSlider.value = sizeMap[currentSize] || 0;
-        document.getElementById('settings-size').textContent = currentSize;
-        
-        maxColorsSlider.value = this.maxColors;
-        document.getElementById('settings-maxColors').textContent = this.maxColors;
-        
-        minPairSlider.value = this.minPair;
-        document.getElementById('settings-minPair').textContent = this.minPair;
-        
-        const fullscreenSlider = document.getElementById('fullscreen-slider');
-        if (fullscreenSlider) {
-          const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-          fullscreenSlider.value = isFullscreen ? 1 : 0;
-          document.getElementById('settings-fullscreen').textContent = isFullscreen ? 'Включен' : 'Выключен';
-        }
-        
+  const sizeSlider = document.getElementById('size-slider');
+  const maxColorsSlider = document.getElementById('maxColors-slider');
+  const minPairSlider = document.getElementById('minPair-slider');
 
-        
-        const themeSelector = document.getElementById('theme-selector');
-        if (themeSelector) {
-          themeSelector.value = this.currentTheme;
-          const themeName = AVAILABLE_THEMES[this.currentTheme]?.name || 'По умолчанию';
-          document.getElementById('settings-theme').textContent = themeName;
-          
-          const customInput = document.getElementById('custom-theme-input');
-          if (customInput) {
-            customInput.style.display = this.currentTheme === 'custom' ? 'block' : 'none';
-          }
-          
-          this.updateThemePreview();
+  if (sizeSlider && maxColorsSlider && minPairSlider) {
+    // ======== Размер поля ========
+    const currentSize = `${this.width}x${this.height}`;
+    const sizeMap = { '10x10': 1, '10x15': 2, '10x20': 3 };
+    sizeSlider.value = sizeMap[currentSize] || 0;
+    document.getElementById('settings-size').textContent = currentSize;
 
-        }
-      }
+    // ======== Количество цветов ========
+    const colorsBounds = (() => {
+      const paletteColors = this.getCurrentThemeColors?.().length || 0;
+      const roomKey = document.getElementById('room-selector')?.value || 'room1';
+      const roomImages = (AVAILABLE_ROOM[roomKey]?.themes?.[0]?.length) || 0;
+      const nmin = 15;
+      const nmax = Math.max(nmin, Math.min(paletteColors || 0, roomImages || 0));
+      return { nmin, nmax };
+    })();
 
-      // Инициализация слайдера "Использовать рисунки"
-      const useImagesSlider = document.getElementById('useImages-slider');
-      const useImagesLabel = document.getElementById('settings-useImages');
+    const { nmin: nminColors, nmax: nmaxColors } = colorsBounds;
+    const maxColorsValue = Math.min(Math.max(this.maxColors ?? CONFIG.maxColors ?? nminColors, nminColors), nmaxColors);
+    const totalPositionsColors = (nmaxColors - nminColors + 1) + 2;
 
-      useImagesSlider.addEventListener('input', (e) => {
-        useImagesLabel.textContent = e.target.value === '1' ? 'Включено' : 'Выключено';
-      });
+    maxColorsSlider.min = 0;
+    maxColorsSlider.max = totalPositionsColors - 1;
+    maxColorsSlider.step = 1;
+    maxColorsSlider.dataset.nmin = nminColors;
+    maxColorsSlider.dataset.nmax = nmaxColors;
+    maxColorsSlider.dataset.totalPositions = totalPositionsColors;
+    maxColorsSlider.dataset.currentNumeric = maxColorsValue;
+    maxColorsSlider.dataset.mode = 'value';
+    document.getElementById('settings-maxColors').textContent = String(maxColorsValue);
 
-      // Инициализация селектора "Галерея рисунков"
-      const roomSelector = document.getElementById('room-selector');
-      const roomLabel = document.getElementById('settings-room');
+    // ======== Минимум пар ========
+    let totalCells = this.width * this.height;
+    const colorsCount = maxColorsValue;
+    const nminPairs = 1; // фиксированное значение
+let nmaxPairs = Math.max(1, Math.floor(totalCells / Math.max(colorsCount * 2, 1)));
+    if (nmaxPairs < nminPairs) nmaxPairs = nminPairs;
 
-      roomSelector.addEventListener('change', (e) => {
-        const selectedText = roomSelector.options[roomSelector.selectedIndex].text;
-        roomLabel.textContent = selectedText;
-      });
+    const totalPositionsPairs = Math.max(3, (nmaxPairs - nminPairs + 1) + 2);
+    minPairSlider.min = 0;
+    minPairSlider.max = totalPositionsPairs - 1;
+    minPairSlider.step = 1;
+    minPairSlider.dataset.nmin = nminPairs;
+    minPairSlider.dataset.nmax = nmaxPairs;
+    minPairSlider.dataset.totalPositions = totalPositionsPairs;
 
+    const minPairValue = Math.min(Math.max(this.minPair ?? CONFIG.minPair ?? nminPairs, nminPairs), nmaxPairs);
+    minPairSlider.dataset.currentNumeric = minPairValue;
+    minPairSlider.dataset.mode = 'value';
+    document.getElementById('settings-minPair').textContent = String(minPairValue);
+
+    // ======== Fullscreen ========
+    const fullscreenSlider = document.getElementById('fullscreen-slider');
+    if (fullscreenSlider) {
+      const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+      fullscreenSlider.value = isFullscreen ? '1' : '0';
+      document.getElementById('settings-fullscreen').textContent = isFullscreen ? 'Включен' : 'Выключен';
     }
+
+    // ======== Тема ========
+    const themeSelector = document.getElementById('theme-selector');
+    if (themeSelector) {
+      themeSelector.value = this.currentTheme;
+      const themeName = AVAILABLE_THEMES[this.currentTheme]?.name || 'По умолчанию';
+      document.getElementById('settings-theme').textContent = themeName;
+
+      const customInput = document.getElementById('custom-theme-input');
+      if (customInput) customInput.style.display = this.currentTheme === 'custom' ? 'block' : 'none';
+
+      this.updateThemePreview();
+    }
+  }
+
+  // ======== Use Images ========
+  const useImagesSlider = document.getElementById('useImages-slider');
+  const useImagesLabel = document.getElementById('settings-useImages');
+  if (useImagesSlider && useImagesLabel) {
+    useImagesLabel.textContent = useImagesSlider.value === '1' ? 'Включено' : 'Выключено';
+    useImagesSlider.oninput = (e) => {
+      useImagesLabel.textContent = e.target.value === '1' ? 'Включено' : 'Выключено';
+    };
+  }
+
+  // ======== Комната ========
+  const roomSelector = document.getElementById('room-selector');
+  const roomLabel = document.getElementById('settings-room');
+  if (roomSelector && roomLabel) {
+    roomLabel.textContent = roomSelector.options[roomSelector.selectedIndex]?.text || '';
+    roomSelector.onchange = () => {
+      roomLabel.textContent = roomSelector.options[roomSelector.selectedIndex]?.text || '';
+    };
+  }
+}
+
 
 
     updateThemePreview() {
@@ -2056,6 +2443,9 @@ function sendChallengeCompletedEvent(finalTime) {
 
         previewContainer.appendChild(paletteContainer);
       });
+
+updateStats();
+
     }
 
 
@@ -2339,6 +2729,7 @@ function sendChallengeCompletedEvent(finalTime) {
         this.useImages = false;
         this.maxColors = Math.min(this.maxColors, this.palette.length);
       }
+      
     }
 
 
@@ -3149,7 +3540,7 @@ applyImageBackgroundToCell(cell) {
               board_height: CONFIG.height,
               color_count: CONFIG.maxColors,
               min_pairs: CONFIG.minPair,
-              room: CONFIG.currentRoom 
+              room: CONFIG.currentRoom
             });
           } catch (err) {
            // console.warn("⚠️ Ошибка при отправке события level_completed");
@@ -3777,21 +4168,66 @@ function startCountdown() {
   showNext();
 }
 
+    // ======== Инициализация состояния fullscreen ========
+    function initFullscreenSetting() {
+      const fullscreenSlider = document.getElementById('fullscreen-slider');
+      if (!fullscreenSlider) return;
 
-    function handleFullscreenChange() {
+      // Установим текущий статус
+      const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+      fullscreenSlider.value = isFullscreen ? 1 : 0;
+      document.getElementById('settings-fullscreen').textContent = isFullscreen ? 'Включен' : 'Выключен';
+      CONFIG.fullscreen = isFullscreen;
+
+      // Обработчик изменения ползунка
+      fullscreenSlider.addEventListener('input', () => {
+        if (fullscreenSlider.value === "1") {
+          enterFullscreen();
+        } else {
+          exitFullscreen();
+        }
+      });
+
+      // Следим за изменением fullscreen извне (кнопки Esc, системные события и т.д.)
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.addEventListener('msfullscreenchange', handleFullscreenChange);
+    }
+
+    function enterFullscreen() {
+      const elem = document.documentElement; // можно заменить на контейнер игры
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    }
+
+    function exitFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+
+    function handleFullscreenChange() { 
       const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
       CONFIG.fullscreen = isFullscreen;
-      
+
       const fullscreenSlider = document.getElementById('fullscreen-slider');
       if (fullscreenSlider) {
         fullscreenSlider.value = isFullscreen ? 1 : 0;
         document.getElementById('settings-fullscreen').textContent = isFullscreen ? 'Включен' : 'Выключен';
       }
-      
-      if (!isFullscreen && CONFIG.fullscreen) {
-        //showMessage('Полноэкранный режим отключен', 'info');
-      }
     }
+
+
+
     //Исправление отображения , Исправление масштабирования
     function updateBoardScale() {
       const root = document.documentElement;
@@ -3944,69 +4380,361 @@ function startCountdown() {
       openSettings();
     });
 
-    function openSettings() {
-      game.updateSettingsDisplay();
-      
-      const sizeSlider = document.getElementById('size-slider');
-      const maxColorsSlider = document.getElementById('maxColors-slider');
-      const minPairSlider = document.getElementById('minPair-slider');
-      const fullscreenSlider = document.getElementById('fullscreen-slider');
-      const saveDataSlider = document.getElementById('saveData-slider');
-      
-      sizeSlider.oninput = function() {
-        const sizes = ['auto', '10×10', '10×15', '10×20'];
-        document.getElementById('settings-size').textContent = sizes[this.value];
-      };
-      
-      maxColorsSlider.oninput = function() {
-        document.getElementById('settings-maxColors').textContent = this.value;
-      };
-      
-      minPairSlider.oninput = function() {
-        document.getElementById('settings-minPair').textContent = this.value;
-      };
-      
-      fullscreenSlider.oninput = function() {
-        const isFullscreen = this.value == 1;
-        document.getElementById('settings-fullscreen').textContent = isFullscreen ? 'Включен' : 'Выключен';
-      };
-      
+// ---------- openSettings (новая версия) ----------
+function openSettings() {
+  game.updateSettingsDisplay();
+
+  const sizeSlider = document.getElementById('size-slider');
+  const maxColorsSlider = document.getElementById('maxColors-slider');
+  const minPairSlider = document.getElementById('minPair-slider');
+  const fullscreenSlider = document.getElementById('fullscreen-slider');
+
+  // === Размер поля ===
+  sizeSlider.oninput = function () {
+    const sizes = ['auto', '10×10', '10×15', '10×20'];
+    document.getElementById('settings-size').textContent = sizes[this.value];
+  };
+
+  // ===== Вспомогательные для "Количество цветов" =====
+  function computeColorsBounds() {
+    const paletteColors = (game && game.getCurrentThemeColors) ? game.getCurrentThemeColors().length : 0;
+    const currentRoomKey = document.getElementById('room-selector')?.value || 'room1';
+    const roomImages = (AVAILABLE_ROOM[currentRoomKey]?.themes?.[0]?.length) || 0;
+
+    const nmin = 15;
+    const nmax = Math.max(nmin, Math.min(paletteColors || 0, roomImages || 0));
+    return { nmin, nmax };
+  }
+  // --- УНИВЕРСАЛЬНЫЙ помощник: текущее числовое значение цветов
+  function getCurrentColorsNumeric() {
+    const bounds = computeColorsBounds();
+    const nmin = parseInt(maxColorsSlider.dataset.nmin, 10) || bounds.nmin || 1;
+    const nmax = parseInt(maxColorsSlider.dataset.nmax, 10) || bounds.nmax || nmin;
+    const total = parseInt(maxColorsSlider.dataset.totalPositions, 10) || (nmax - nmin + 1);
+
+    // если чекбокс "max" включён — возвращаем nmax
+    if (document.getElementById('maxColors-maxCheck')?.checked) return nmax;
+
+    // если есть сохранённое числовое значение — используем его (и проверяем диапазон)
+    const cur = parseInt(maxColorsSlider.dataset.currentNumeric, 10);
+    if (Number.isFinite(cur) && cur >= nmin && cur <= nmax) return cur;
+
+    // иначе — по индексу (в новом формате индекс i -> nmin + i)
+    const idx = Math.min(Math.max(parseInt(maxColorsSlider.value, 10) || 0, 0), Math.max(0, total - 1));
+    return nmin + idx;
+  }
 
 
-      const themeSelector = document.getElementById('theme-selector');
-      themeSelector.onchange = function() {
-        const selectedTheme = this.value;
-        const themeName = AVAILABLE_THEMES[selectedTheme]?.name || 'По умолчанию';
-        document.getElementById('settings-theme').textContent = themeName;
-        
-        const customInput = document.getElementById('custom-theme-input');
-        if (customInput) {
-          customInput.style.display = selectedTheme === 'custom' ? 'block' : 'none';
-        }
-        
-        if (game) {
-          game.currentTheme = selectedTheme;
+  // --- Слайдер Количество цветов (только числа: nmin ... nmax)
+  function setupColorsSlider() {
+    const colorsValueEl = document.getElementById('settings-maxColors');
+    const bounds = computeColorsBounds();
+    const nmin = bounds.nmin;
+    const nmax = bounds.nmax;
 
-          // 🔹 Сброс закрепления при смене темы
-          game.pinnedPaletteIndex = -1;
-          game.updateThemePreview();
-        }
-      };
+    const numericCount = Math.max(1, nmax - nmin + 1);
+    const totalPositions = numericCount;
 
-      const customInput = document.getElementById('custom-colors-input');
-      if (customInput) {
-        customInput.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' && e.ctrlKey) {
-            e.preventDefault();
-            addCustomColors();
-          }
-        });
-      }
+    maxColorsSlider.min = 0;
+    maxColorsSlider.max = totalPositions - 1;
+    maxColorsSlider.step = 1;
+    maxColorsSlider.dataset.nmin = nmin;
+    maxColorsSlider.dataset.nmax = nmax;
+    maxColorsSlider.dataset.totalPositions = totalPositions;
 
-      document.querySelector('.settings-modal').classList.add('active');
+    const colorsMaxCheck = document.getElementById('maxColors-maxCheck');
 
+    // --- если чекбокс max активен — сразу прыгаем на максимум
+    if (colorsMaxCheck?.checked) {
+      maxColorsSlider.value = totalPositions - 1;
+      maxColorsSlider.disabled = true;
+      maxColorsSlider.dataset.mode = 'max';
+      maxColorsSlider.dataset.currentNumeric = nmax;
+      colorsValueEl.textContent = String(nmax);
+    } else {
+      // иначе — восстановление обычного значения
+      const prevNumeric = Number.isFinite(parseInt(maxColorsSlider.dataset.currentNumeric, 10))
+        ? parseInt(maxColorsSlider.dataset.currentNumeric, 10)
+        : (CONFIG && CONFIG.maxColors ? CONFIG.maxColors : nmin);
+      const clamped = Math.min(Math.max(prevNumeric, nmin), nmax);
+      const initialIndex = clamped - nmin;
+      maxColorsSlider.value = initialIndex;
+      colorsValueEl.textContent = String(clamped);
+      maxColorsSlider.disabled = false;
     }
 
+    // подписи: только крайние
+    const labelsContainer = maxColorsSlider.parentElement.querySelector('.slider-labels');
+    if (labelsContainer) {
+      labelsContainer.innerHTML = '';
+      for (let i = 0; i < totalPositions; i++) {
+        const span = document.createElement('span');
+        if (i === 0) span.textContent = String(nmin);
+        else if (i === totalPositions - 1) span.textContent = String(nmax);
+        else span.textContent = '';
+        labelsContainer.appendChild(span);
+      }
+    }
+
+    // --- обработчик движения ползунка (если не заблокирован)
+    maxColorsSlider.oninput = function () {
+      if (colorsMaxCheck?.checked) return; // игнорируем при активном max
+      const idx = Math.min(Math.max(parseInt(this.value, 10) || 0, 0), totalPositions - 1);
+      const numericValue = nmin + idx;
+      colorsValueEl.textContent = String(numericValue);
+      maxColorsSlider.dataset.currentNumeric = numericValue;
+      if (typeof setupPairSlider === 'function') setupPairSlider();
+    };
+  }
+
+
+
+  // ===== Минимум пар =====
+// --- Слайдер Минимум пар (только числа: nminPairs ... nmaxPairs)
+function setupPairSlider() {
+  const pairValueEl = document.getElementById('settings-minPair');
+  const pairsMaxCheck = document.getElementById('minPair-maxCheck');
+
+  // ----- расчёт ячеек -----
+  let totalCells = 100;
+  const sizeVal = parseInt(sizeSlider.value, 10);
+  if (sizeVal === 0) {
+    totalCells = game?.getCellCount?.() || (game?.cols * game?.rows) || 100;
+  } else {
+    const mapping = { 1: 100, 2: 150, 3: 200 };
+    totalCells = mapping[sizeVal] || 100;
+  }
+
+  // ----- число цветов -----
+  const colorsCount = Math.max(1, getCurrentColorsNumeric());
+
+  // ----- диапазон пар -----
+  const nminPairs = 1;
+  let nmaxPairs = Math.max(1, Math.floor(totalCells / Math.max(colorsCount * 2, 1)));
+  if (nmaxPairs < nminPairs) nmaxPairs = nminPairs;
+
+  const numericCount = Math.max(1, nmaxPairs - nminPairs + 1);
+  const totalPositions = numericCount;
+
+  minPairSlider.min = 0;
+  minPairSlider.max = totalPositions - 1;
+  minPairSlider.step = 1;
+  minPairSlider.dataset.nmin = nminPairs;
+  minPairSlider.dataset.nmax = nmaxPairs;
+  minPairSlider.dataset.totalPositions = totalPositions;
+
+  // --- если max чекбокс активен — авто максимум
+  if (pairsMaxCheck?.checked) {
+    minPairSlider.value = totalPositions - 1;
+    minPairSlider.disabled = true;
+    minPairSlider.dataset.mode = 'max';
+    minPairSlider.dataset.currentNumeric = nmaxPairs;
+    pairValueEl.textContent = String(nmaxPairs);
+  } else {
+    const prevNumeric = Number.isFinite(parseInt(minPairSlider.dataset.currentNumeric, 10))
+      ? parseInt(minPairSlider.dataset.currentNumeric, 10)
+      : CONFIG.minPair || nminPairs;
+    const clamped = Math.min(Math.max(prevNumeric, nminPairs), nmaxPairs);
+    const initialIndex = clamped - nminPairs;
+    minPairSlider.value = initialIndex;
+    minPairSlider.dataset.currentNumeric = clamped;
+    pairValueEl.textContent = String(clamped);
+    minPairSlider.disabled = false;
+  }
+
+  // подписи
+  const labelsContainer = minPairSlider.parentElement.querySelector('.slider-labels');
+  if (labelsContainer) {
+    labelsContainer.innerHTML = '';
+    for (let i = 0; i < totalPositions; i++) {
+      const span = document.createElement('span');
+      if (i === 0) span.textContent = String(nminPairs);
+      else if (i === totalPositions - 1) span.textContent = String(nmaxPairs);
+      else span.textContent = '';
+      labelsContainer.appendChild(span);
+    }
+  }
+
+  // обработчик
+  minPairSlider.oninput = function () {
+    if (pairsMaxCheck?.checked) return; // блок при max
+    const idx = Math.min(Math.max(parseInt(this.value, 10), 0), totalPositions - 1);
+    const numeric = nminPairs + idx;
+    pairValueEl.textContent = String(numeric);
+    minPairSlider.dataset.currentNumeric = numeric;
+  };
+
+
+
+}
+
+//////
+
+
+  // запуск
+  setupColorsSlider();
+  setupPairSlider();
+
+  // автоматическое обновление при изменении размера или количества цветов
+sizeSlider.addEventListener('input', setupPairSlider);
+maxColorsSlider.addEventListener('input', setupPairSlider);
+
+
+  const roomSelector = document.getElementById('room-selector');
+  if (roomSelector) {
+    roomSelector.addEventListener('change', setupColorsSlider);
+  }
+
+  fullscreenSlider.oninput = function () {
+    document.getElementById('settings-fullscreen').textContent = this.value == 1 ? 'Включен' : 'Выключен';
+  };
+
+  // Смена темы → пересчёт
+  const themeSelector = document.getElementById('theme-selector');
+  themeSelector.onchange = function () {
+    const selectedTheme = this.value;
+    const themeName = AVAILABLE_THEMES[selectedTheme]?.name || 'По умолчанию';
+    document.getElementById('settings-theme').textContent = themeName;
+
+    const customInput = document.getElementById('custom-theme-input');
+    if (customInput) {
+      customInput.style.display = selectedTheme === 'custom' ? 'block' : 'none';
+    }
+
+    if (game) {
+      game.currentTheme = selectedTheme;
+      game.pinnedPaletteIndex = -1;
+      game.updateThemePreview();
+    }
+
+    setupColorsSlider();
+  };
+
+  document.querySelector('.settings-modal').classList.add('active');
+
+  // === Привязка чекбоксов max ===
+const sizeMaxCheck = document.getElementById('size-maxCheck');
+const colorsMaxCheck = document.getElementById('maxColors-maxCheck');
+const pairsMaxCheck = document.getElementById('minPair-maxCheck');
+
+// === SIZE ===
+sizeMaxCheck.onchange = function() {
+  const slider = sizeSlider;
+  if (this.checked) {
+    slider.value = slider.max; // всегда в max
+    slider.disabled = true;
+    document.getElementById('settings-size').textContent = 'auto';
+  } else {
+    slider.disabled = false;
+    const sizes = ['auto', '10×10', '10×15', '10×20'];
+    document.getElementById('settings-size').textContent = sizes[slider.value];
+  }
+   // 👉 пересчёт при изменении чекбокса
+  updateStats().catch(err => console.warn('updateStats error', err));
+};
+
+// === COLORS ===
+colorsMaxCheck.onchange = function() {
+  const slider = maxColorsSlider;
+  if (this.checked) {
+    slider.value = slider.max;
+    slider.disabled = true;
+    slider.dataset.mode = 'max';
+    slider.dataset.currentNumeric = slider.dataset.nmax;
+    document.getElementById('settings-maxColors').textContent = 'max';
+  } else {
+    slider.disabled = false;
+  }
+   // 👉 пересчёт при изменении чекбокса
+  updateStats().catch(err => console.warn('updateStats error', err));
+};
+
+// === PAIRS ===
+pairsMaxCheck.onchange = function() {
+  const slider = minPairSlider;
+  if (this.checked) {
+    slider.value = slider.max;
+    slider.disabled = true;
+    slider.dataset.mode = 'max';
+    slider.dataset.currentNumeric = slider.dataset.nmax;
+    document.getElementById('settings-minPair').textContent = 'max';
+  } else {
+    slider.disabled = false;
+  }
+   // 👉 пересчёт при изменении чекбокса
+  updateStats().catch(err => console.warn('updateStats error', err));
+};
+
+}
+
+// ---------- applySettings ----------
+function applySettings() {
+  const sizeSlider = document.getElementById('size-slider');
+  const maxColorsSlider = document.getElementById('maxColors-slider');
+  const minPairSlider = document.getElementById('minPair-slider');
+  const fullscreenSlider = document.getElementById('fullscreen-slider');
+
+  let width = 10, height = 10;
+  if (sizeSlider.value == 0) {
+    width = game.width;
+    height = game.height;
+  } else if (sizeSlider.value == 1) {
+    width = 10; height = 10;
+  } else if (sizeSlider.value == 2) {
+    width = 10; height = 15;
+  } else if (sizeSlider.value == 3) {
+    width = 10; height = 20;
+  }
+
+  const maxHeight = game.calculateMaxHeight();
+  if (height > maxHeight) height = maxHeight - 1;
+
+  const maxColorsNumeric = parseInt(maxColorsSlider.dataset.currentNumeric) || CONFIG.maxColors;
+  const minPairNumeric = parseInt(minPairSlider.dataset.currentNumeric) || CONFIG.minPair;
+
+  CONFIG.width = width;
+  CONFIG.height = height;
+  CONFIG.maxColors = maxColorsNumeric;
+  CONFIG.minPair = minPairNumeric;
+  CONFIG.theme = document.getElementById('theme-selector').value;
+  CONFIG.fullscreen = fullscreenSlider.value == 1;
+  CONFIG.currentRoom = document.getElementById('room-selector')?.value || 'room1';
+  CONFIG.useImages = document.getElementById('useImages-slider')?.value === '1';
+
+  if (game && game.clearImageUrlCache) game.clearImageUrlCache();
+
+  const prevPinned = (game && typeof game.pinnedPaletteIndex !== 'undefined') ? game.pinnedPaletteIndex : -1;
+  game = new Game(CONFIG);
+
+  if (prevPinned >= 0) {
+    game.pinnedPaletteIndex = prevPinned;
+    game.theme = game.getCurrentThemeColors();
+
+    const maxColorsInPalette = game.theme.length;
+    if (CONFIG.maxColors > maxColorsInPalette) {
+      CONFIG.maxColors = maxColorsInPalette;
+      game.maxColors = maxColorsInPalette;
+      showMessage(`Количество цветов ограничено ${game.maxColors}`, 'info');
+    } else {
+      game.maxColors = CONFIG.maxColors;
+    }
+
+    game.board = game.generateBoard();
+    game.mount();
+    game.redrawAll();
+    setTimeout(() => game.runInitialReveal(2000), 100);
+  }
+// Инициализируем при загрузке настроек
+initFullscreenSetting();
+
+  updateEventHandlers();
+  saveGameData();
+  closeSettings();
+}
+
+
+
+/////////
     function closeSettings() {
       document.querySelector('.settings-modal').classList.remove('active');
     }
@@ -4018,76 +4746,372 @@ function startCountdown() {
     });
 
 
-     function applySettings() {
-      const sizeSlider = document.getElementById('size-slider');
-      const maxColors = parseInt(document.getElementById('settings-maxColors').textContent);
-      const minPair = parseInt(document.getElementById('settings-minPair').textContent);
-      const selectedTheme = document.getElementById('theme-selector').value;
-      const fullscreenSlider = document.getElementById('fullscreen-slider');
-      const isFullscreen = fullscreenSlider ? fullscreenSlider.value == 1 : false;
 
-      let width = 10, height = 10;
-      if (sizeSlider.value == 0) {
-        width = game.width;
-        height = game.height;
-      } else if (sizeSlider.value == 1) {
-        width = 10; height = 10;
-      } else if (sizeSlider.value == 2) {
-        width = 10; height = 15;
-      } else if (sizeSlider.value == 3) {
-        width = 10; height = 20;
+// === Конфиги модели ===
+const MODEL = {
+  base_k: 0.0476,     // подогнанная базовая константа (сек/ячейка/коэффициент)
+  sizeCoef: 1.0,      // насколько сильно увеличивается время при росте высоты > 10
+  difficultyScale: 1.3, // масштаб для перехода суммарных факторов в сложность
+  difficultyAdjustDiv: 25, // делитель для дополнительной коррекции времени по сложности
+  recentRunsLimit: 50 // сколько элементов держать в recentRuns (можно увеличить)
+};
+
+// === IndexedDB: простая обёртка ===
+const DB_NAME = 'gameStatsDB';
+const DB_VERSION = 1;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) return reject(new Error('IndexedDB не поддерживается'));
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('runs')) {
+        db.createObjectStore('runs', { keyPath: 'id' }); // id — хеш параметров
       }
-
-      const maxHeight = game.calculateMaxHeight();
-      if (height > maxHeight) {
-        height = maxHeight - 1;
+      if (!db.objectStoreNames.contains('recentRuns')) {
+        db.createObjectStore('recentRuns', { autoIncrement: true });
       }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
 
-      const pinnedPaletteIndex = game ? game.pinnedPaletteIndex : -1;
+async function dbGet(storeName, key) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const r = store.get(key);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
 
-      // 🔹 применяем настройки
-      CONFIG.width = width;
-      CONFIG.height = height;
-      CONFIG.maxColors = maxColors;
-      CONFIG.minPair = minPair;
-      CONFIG.theme = selectedTheme;
-      CONFIG.fullscreen = isFullscreen;
+async function dbPut(storeName, value, key) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const r = store.put(value, key);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
 
-      // флаги для изображений берём из UI
-      CONFIG.useImages = document.getElementById('useImages-slider')?.value === '1';
-      CONFIG.currentRoom = document.getElementById('room-selector')?.value || 'room1';
+async function dbAdd(storeName, value) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const r = store.add(value);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
 
-      // очищаем кеш blob-ссылок при смене настроек
-      if (game && game.clearImageUrlCache) {
-        game.clearImageUrlCache();
-      }
+async function dbGetAll(storeName) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const r = store.getAll();
+    r.onsuccess = () => res(r.result || []);
+    r.onerror = () => rej(r.error);
+  });
+}
 
-      game = new Game(CONFIG);
+async function dbDeleteKey(storeName, key) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const r = store.delete(key);
+    r.onsuccess = () => res();
+    r.onerror = () => rej(r.error);
+  });
+}
 
-      if (pinnedPaletteIndex >= 0) {
-        game.pinnedPaletteIndex = pinnedPaletteIndex;
-        game.theme = game.getCurrentThemeColors();
+// === Помощники: нормализация настроек ===
+function parseSizeInput(sizeInput) {
+  // Возвращает { width, height }
+  // Принимает: 'auto' | '10×15' | number index (0..3) | object {width,height}
+  // === Новое: auto → текущее поле или max при активном чекбоксе ===
 
-        const maxColorsInPalette = game.theme.length;
-        if (maxColors > maxColorsInPalette) {
-          CONFIG.maxColors = maxColorsInPalette;
-          game.maxColors = maxColorsInPalette;
-          showMessage(`Количество цветов ограничено ${game.maxColors}`, 'info');
-        } else {
-          CONFIG.maxColors = maxColors;
-          game.maxColors = maxColors;
-        }
-        game.redrawAll()
-        game.board = game.generateBoard();
-        game.mount();
-        setTimeout(() => game.runInitialReveal(2000), 100);
-      }
+  const maxCheck = document.getElementById('size-maxCheck');
+  const useMax = maxCheck && maxCheck.checked;
 
-      updateEventHandlers();
-      saveGameData();
-      closeSettings();
+  if (typeof sizeInput === 'object' && sizeInput?.width && sizeInput?.height)
+    return sizeInput;
 
+  // auto = текущее значение игры
+  if (sizeInput === 'auto' || sizeInput === 0) {
+    if (useMax) return { width: 10, height: 20 };
+    if (game && game.width && game.height)
+      return { width: game.width, height: game.height };
+    return { width: 10, height: 10 };
+  }
+
+  if (typeof sizeInput === 'string' && sizeInput.includes('×')) {
+    const [w, h] = sizeInput.split('×').map(Number);
+    return { width: w, height: h };
+  }
+
+  if (typeof sizeInput === 'number') {
+    switch (sizeInput) {
+      case 1: return { width: 10, height: 10 };
+      case 2: return { width: 10, height: 15 };
+      case 3: return { width: 10, height: 20 };
+      default:
+        if (useMax) return { width: 10, height: 20 };
+        return { width: 10, height: 10 };
     }
+  }
+
+  return { width: 10, height: 10 };
+}
+
+
+function normalizeColorsInput(maxColors) {
+  // может быть 'min' 'max' или число
+  if (maxColors === 'min') return 5;
+  if (maxColors === 'max') return 29;
+  const n = Number(maxColors);
+  return Number.isFinite(n) ? Math.max(1, Math.round(n)) : 20;
+}
+
+function normalizePairsInput(minPairs) {
+  if (minPairs === 'min') return 1;
+  if (minPairs === 'max') return 5;
+  const n = Number(minPairs);
+  return Number.isFinite(n) ? Math.min(5, Math.max(1, Math.round(n))) : 1;
+}
+
+// === Оценка сложности (обновлённая) ===
+// === Оценка сложности (обновлённая) ===
+function estimateDifficultyRaw({ width, height, maxColors, minPairs }) {
+  const C = maxColors;
+  const P = minPairs;
+  const A = width * height;
+
+  const baseColorsRef = 20;
+  const basePairsRef = 1;
+  const f1 = C / baseColorsRef;                   // влияние количества цветов (чем выше - тем сложнее)
+  const f2 = P / Math.max(1, basePairsRef);       // влияние гарантированных пар
+  const f3 = Math.sqrt(A) / 10;                   // влияние размера поля (10x10 -> 1)
+
+  const sum = f1 * 1.0 + f2 * 0.6 + f3 * 1.0;     // веса подобраны эмпирически
+  const D = sum * MODEL.difficultyScale;
+  return Math.min(10, Math.max(1, +(D).toFixed(1)));
+}
+
+// Обёртка, принимающая различные форматы
+function estimateDifficulty(settings) {
+  const size = parseSizeInput(settings.size ?? settings);
+  const C = normalizeColorsInput(settings.maxColors ?? settings);
+  const P = normalizePairsInput(settings.minPairs ?? settings);
+  return estimateDifficultyRaw({ width: size.width, height: size.height, maxColors: C, minPairs: P });
+}
+
+// === Подсчёт вариативности ===
+// чем выше вариативность — тем больше свободы действий, и тем быстрее игрок проходит
+function estimateVariability({ width, height, maxColors, minPairs }) {
+  const A = width * height;
+  const C = maxColors;
+  const P = Math.max(1, minPairs);
+  const variability = (C / P) * Math.sqrt(A); // базовая формула
+  return variability;
+}
+
+
+// возвращает Promise<number> — сек.
+// === Модель длительности + использование данных из IndexedDB ===
+async function estimateDuration(settings) {
+  const size = parseSizeInput(settings.size ?? settings);
+  const C = normalizeColorsInput(settings.maxColors ?? settings);
+  const P = normalizePairsInput(settings.minPairs ?? settings);
+  const W = size.width;
+  const H = size.height;
+  const A = W * H;
+
+  const variability = estimateVariability({ width: W, height: H, maxColors: C, minPairs: P });
+  const difficulty = estimateDifficultyRaw({ width: W, height: H, maxColors: C, minPairs: P });
+
+  // === 1. Базовая длительность от размера поля ===
+  const base = Math.pow(A, 0.8) * 0.6; // немного сглаженный рост
+
+  // === 2. Факторы сложности ===
+  // Количество цветов — усиливаем влияние
+  const colorFactor = 1 + Math.pow(C / 6, 1.25) * 0.2; 
+
+  // Минимум гарантированных пар — чем больше, тем чуть легче
+  const pairsFactor = 1 - 0.15 * Math.log2(1 + P / 10);
+
+  // Вариативность и общая "хаотичность" поля
+  const variabilityFactor = 1 + (1 / Math.max(1, variability)) * 0.25;
+
+  // Общая вычислительная сложность (эмпирический множитель)
+  const difficultyFactor = 1 + Math.min(1.5, difficulty / 4);
+
+  let modelEstimate = base * colorFactor * pairsFactor * variabilityFactor * difficultyFactor;
+
+  // === 3. Добавляем человеческие когнитивные задержки ===
+  const reactionTime = 1.2;        // 300 мс
+  const thinkingTimePerBlock = 0.048; // 12 мс
+  const blocksProcessedPerMove = Math.round(A * 0.80); // игрок оценивает ~25% поля за ход
+  const thinkingTime = blocksProcessedPerMove * thinkingTimePerBlock;
+
+  const timePerPair = reactionTime + thinkingTime;
+  const totalActionTime = timePerPair * P;
+
+  // Добавляем когнитивное время
+  modelEstimate += totalActionTime;
+
+  // === 4. Коррекция диапазона (в секундах) ===
+  modelEstimate = Math.min(Math.max(modelEstimate, 8), 300);
+  modelEstimate = Math.round(modelEstimate);
+
+  // === 5. Коррекция по данным IndexedDB (история прохождений) ===
+  const paramsKey = JSON.stringify({ w: W, h: H, c: C, p: P });
+  try {
+    const record = await dbGet('runs', paramsKey);
+    if (record?.runs?.length > 0) {
+      const arr = record.runs.map(r => r.duration).slice(0, 3);
+      const avg = Math.round(arr.reduce((s, v) => s + v, 0) / arr.length);
+      const alpha = Math.min(0.75, arr.length / 3 * 0.75);
+      return Math.round(modelEstimate * (1 - alpha) + avg * alpha);
+    }
+
+    const recent = await dbGetAll('recentRuns');
+    if (recent?.length > 0) {
+      const target = { A, C, P };
+      const scored = recent.map(r => {
+        const rW = r.params?.w ?? r.params?.width ?? 10;
+        const rH = r.params?.h ?? r.params?.height ?? 10;
+        const rA = rW * rH;
+        const rC = r.params?.c ?? r.params?.colors ?? r.params?.maxColors ?? 20;
+        const rP = r.params?.p ?? r.params?.pairs ?? r.params?.minPairs ?? 1;
+        const dA = (target.A - rA) / Math.max(1, target.A);
+        const dC = (target.C - rC) / Math.max(1, target.C);
+        const dP = (target.P - rP) / Math.max(1, target.P);
+        const dist = Math.sqrt(dA * dA + dC * dC + dP * dP);
+        return { rec: r, dist };
+      });
+      scored.sort((a, b) => a.dist - b.dist);
+      const top = scored.slice(0, 3).filter(x => typeof x.rec?.duration === 'number');
+      if (top.length > 0) {
+        const arr = top.map(x => x.rec.duration);
+        const avg = Math.round(arr.reduce((s, v) => s + v, 0) / arr.length);
+        const alpha = Math.min(0.6, top.length / 3 * 0.6);
+        return Math.round(modelEstimate * (1 - alpha) + avg * alpha);
+      }
+    }
+  } catch (err) {
+    console.warn('estimateDuration: indexeddb error', err);
+    return modelEstimate;
+  }
+
+  return modelEstimate;
+}
+
+// === Запись результата прохождения (вызывать при завершении уровня) ===
+async function saveRunResult(settings, durationSeconds) {
+  const size = parseSizeInput(settings.size ?? settings);
+  const C = normalizeColorsInput(settings.maxColors ?? settings);
+  const P = normalizePairsInput(settings.minPairs ?? settings);
+  const key = JSON.stringify({ w: size.width, h: size.height, c: C, p: P });
+  const ts = Date.now();
+  // Обновляем runs (до 3 последних)
+  try {
+    const existing = await dbGet('runs', key);
+    const newRun = { duration: Math.round(durationSeconds), ts };
+    let runs = [];
+    if (existing && Array.isArray(existing.runs)) {
+      runs = [newRun].concat(existing.runs).slice(0, 3);
+    } else runs = [newRun];
+    await dbPut('runs', { id: key, runs });
+
+    // Добавляем в recentRuns
+    await dbAdd('recentRuns', { params: { w: size.width, h: size.height, c: C, p: P }, duration: Math.round(durationSeconds), ts });
+
+    // Обрезаем recentRuns до лимита
+    const all = await dbGetAll('recentRuns');
+    if (all.length > MODEL.recentRunsLimit) {
+      // удаляем самые старые — делаем это грубо: читаем все и удаляем (можно оптимизировать)
+      // здесь удаление по ключам не реализовано — простая стратегия: реинициализируем store (удаление старого DB) не желает. 
+      // Простая корректировка: удаляем первые N по cursor (реализовать, если нужно).
+      // Для простоты пока ничего не делаем — recentRuns лимит служит предупреждением.
+    }
+  } catch (err) {
+    console.warn('saveRunResult error', err);
+  }
+}
+
+// === formatTime ===
+function formatTime(seconds) {
+  seconds = Math.max(0, Math.round(seconds));
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`; // формат M:SS (0:59)
+}
+
+
+// === Интерпретация сложности ===
+function getDifficultyLevel(d) {
+  if (d < 3.5) return { name: 'Лёгкая', class: 'easy' };
+  if (d < 6.5) return { name: 'Средняя', class: 'normal' };
+  if (d < 8.5) return { name: 'Сложная', class: 'hard' };
+  return { name: 'Невозможная', class: 'extreme' };
+}
+
+// === Обновлённая функция updateStats (async) ===
+async function updateStats(settings) {
+  // settings может быть объектом со свойствами size/maxColors/minPairs или берём значения из UI
+  let normalizedSettings = settings;
+  if (!settings || typeof settings !== 'object' || (!('size' in settings) && !('maxColors' in settings))) {
+    // читаем из UI
+    const sizeSlider = document.getElementById('size-slider');
+    const maxColorsSlider = document.getElementById('maxColors-slider');
+    const minPairSlider = document.getElementById('minPair-slider');
+
+    const sizeVal = sizeSlider ? Number(sizeSlider.value) : 'auto';
+    const maxColorsVal = maxColorsSlider ? (maxColorsSlider.dataset.currentNumeric || maxColorsSlider.value) : CONFIG.maxColors;
+    const minPairVal = minPairSlider ? (minPairSlider.dataset.currentNumeric || minPairSlider.value) : CONFIG.minPair;
+
+    normalizedSettings = { size: sizeVal, maxColors: maxColorsVal, minPairs: minPairVal };
+  }
+
+  const difficultyValue = estimateDifficulty(normalizedSettings);
+  const durationSeconds = await estimateDuration(normalizedSettings);
+  const diff = getDifficultyLevel(difficultyValue);
+
+  const diffElem = document.getElementById('difficulty-name');
+  const durElem = document.getElementById('duration-value');
+
+  if (diffElem) {
+    diffElem.textContent = `${diff.name} (${difficultyValue})`;
+    diffElem.className = `stat-value ${diff.class}`;
+  }
+  if (durElem) {
+    durElem.textContent = formatTime(durationSeconds);
+  }
+
+  return { difficulty: difficultyValue, duration: durationSeconds };
+}
+
+// === Вставьте вместо вашего document.addEventListener('change'...) ===
+// Пример: обновлять при изменении слайдеров
+document.addEventListener('input', (e) => {
+  if (e.target.matches('#size-slider, #maxColors-slider, #minPair-slider')) {
+    // fire & forget
+    updateStats().catch(err => console.warn('updateStats error', err));
+  }
+}); 
+
+// === Пример использования: сохранять результат по окончании игры ===
+// saveRunResult({ size: '10×10', maxColors: 20, minPairs: 1 }, 125);
+
 
 
     function addCustomColors() {
@@ -4357,13 +5381,69 @@ function updateTimer() {
 
 
 
+/* база данных для рекордов */
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) return reject(new Error('IndexedDB не поддерживается'));
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('runs')) {
+        db.createObjectStore('runs', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('recentRuns')) {
+        db.createObjectStore('recentRuns', { autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains('records')) {
+        db.createObjectStore('records', { keyPath: 'id' }); // хранит лучший результат
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/* закончено */
+
+async function getRecord(settings) {
+  const size = parseSizeInput(settings.size ?? settings);
+  const C = normalizeColorsInput(settings.maxColors ?? settings);
+  const P = normalizePairsInput(settings.minPairs ?? settings);
+  const key = JSON.stringify({ w: size.width, h: size.height, c: C, p: P });
+  try {
+    const rec = await dbGet('records', key);
+    return rec ? rec.bestTime : null;
+  } catch (err) {
+    console.warn('getRecord error', err);
+    return null;
+  }
+}
+
+async function saveRecord(settings, newTime) {
+  const size = parseSizeInput(settings.size ?? settings);
+  const C = normalizeColorsInput(settings.maxColors ?? settings);
+  const P = normalizePairsInput(settings.minPairs ?? settings);
+  const key = JSON.stringify({ w: size.width, h: size.height, c: C, p: P });
+  try {
+    const existing = await dbGet('records', key);
+    if (!existing || newTime < existing.bestTime) {
+      await dbPut('records', { id: key, bestTime: newTime, ts: Date.now() });
+      return true; // новый рекорд!
+    }
+    return false; // не побит
+  } catch (err) {
+    console.warn('saveRecord error', err);
+    return false;
+  }
+}
 
 
-function showLevelCompleteMessage(finalTime) {
+
+
+async function showLevelCompleteMessage(finalTime) {
   if (!challengeMode) return;
 
   const boardEl = document.getElementById("board");
-
   if (document.getElementById("level-complete")) return;
 
   const overlay = document.createElement("div");
@@ -4378,7 +5458,6 @@ function showLevelCompleteMessage(finalTime) {
   time.className = "overlay-level-time";
   time.textContent = `Время: ${finalTime}`;
 
-  // блок с доп. инфой
   const info = document.createElement("div");
   info.className = "overlay-level-info";
   info.innerHTML = `
@@ -4387,34 +5466,52 @@ function showLevelCompleteMessage(finalTime) {
     <div>Минимум пар: ${CONFIG.minPair}</div>
   `;
 
+  const [m, s] = finalTime.split(":").map(Number);
+  const duration = m * 60 + s;
+  const prevRecord = await getRecord(CONFIG);
+  const isRecord = await saveRecord(CONFIG, duration);
+
+  if (prevRecord || isRecord) {
+    const recordEl = document.createElement("div");
+    recordEl.className = "overlay-level-record";
+
+    if (isRecord) {
+      recordEl.innerHTML = `🏆 <b>Новый рекорд!</b> ${finalTime}`;
+      startConfettiAnimation(); // Запускаем только если новый рекорд
+    } else {
+      const bestFormatted = formatTime(prevRecord);
+      recordEl.textContent = `Рекорд времени: ${bestFormatted}`;
+    }
+
+    overlay.appendChild(recordEl);
+  }
+
   const okBtn = document.createElement("button");
   okBtn.className = "overlay-level-btn";
   okBtn.textContent = "ОК";
 
-  okBtn.addEventListener("click", () => {
+  okBtn.addEventListener("click", async () => {
+    await saveRunResult(CONFIG, duration);
+
     overlay.remove();
     stopAndResetTimer();
 
     game.reset();
     updateEventHandlers();
-
     applyDim();
 
-    // 🚩 Явно берём кнопку Back из DOM
     const backBtn = document.getElementById("back");
     if (backBtn) {
       backBtn.classList.add("cooldown");
-      //backBtn.style.setProperty("--cooldown-time", "3000ms"); // можно синхронизировать с 3..2..1
       backBtn.style.animation = "none";
       backBtn.offsetHeight;
       backBtn.style.animation = null;
     }
 
     waitForBoardAnimation(boardEl).then(() => {
-      startCountdown(); // внутри него разблокируем back
+      startCountdown();
     });
   });
-
 
   overlay.appendChild(title);
   overlay.appendChild(time);
@@ -4422,7 +5519,81 @@ function showLevelCompleteMessage(finalTime) {
   overlay.appendChild(okBtn);
   boardEl.appendChild(overlay);
 }
+// запуск конфетти
+function startConfettiAnimation() {
+  const canvas = document.createElement("canvas");
+  canvas.style.position = "fixed";
+  canvas.style.top = 0;
+  canvas.style.left = 0;
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  canvas.style.pointerEvents = "none";
+  canvas.style.zIndex = 9999;
+  document.body.appendChild(canvas);
 
+  const ctx = canvas.getContext("2d");
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  const confettiCount = 80;
+  const pastelColors = [
+    "#FFC1CC", // розовый
+    "#B3E5FC", // голубой
+    "#C8E6C9", // зелёный
+    "#FFF9C4"  // жёлтый
+  ];
+
+  const confetti = [];
+
+  for (let i = 0; i < confettiCount; i++) {
+    confetti.push({
+      x: Math.random() > 0.5 ? 0 : canvas.width,
+      y: canvas.height,
+      size: Math.random() * 8 + 8, // чуть крупнее
+      color: pastelColors[Math.floor(Math.random() * pastelColors.length)],
+      velocityX: (Math.random() * 4 + 2) * (Math.random() > 0.5 ? 1 : -1),
+      velocityY: -(Math.random() * 8 + 6),
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * 10,
+      life: Math.random() * 80 + 60
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confetti.forEach((c) => {
+      c.x += c.velocityX;
+      c.y += c.velocityY;
+      c.velocityY += 0.2;
+      c.rotation += c.rotationSpeed;
+
+      c.life--;
+
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      ctx.rotate((c.rotation * Math.PI) / 180);
+
+      ctx.fillStyle = c.color;
+      ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size / 2);
+
+      ctx.restore();
+    });
+
+    if (confetti.some(c => c.life > 0)) {
+      requestAnimationFrame(animate);
+    } else {
+      document.body.removeChild(canvas);
+    }
+  }
+
+  animate();
+}
 
 
 
@@ -4438,7 +5609,7 @@ function stopTimerOnly() {
   </script>
   
 
-  <script>
+  <script> /*для загрузки на github.io */
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/onet/service-worker.js")
     .then(() => console.log("Service Worker зарегистрирован"))
@@ -4449,12 +5620,21 @@ if ("serviceWorker" in navigator) {
 
 </script>
 
+  <script> /*локальная проверка 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js")
+    .then(() => console.log("Service Worker зарегистрирован локально"))
+    .catch(err => console.error("Ошибка лоальной регистрации SW:", err));
+}
+
+*/
+
+</script>
+
 
 </body>
 
 </html>
-
-
 
 
 
