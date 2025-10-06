@@ -1,4 +1,4 @@
-const CACHE_NAME = "block-game-cache-v11";
+const CACHE_NAME = "block-game-cache-v12";
 const URLS_TO_CACHE = [
   "/onet/",
   "/onet/index.html",

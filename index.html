@@ -1378,8 +1378,14 @@ div.settings-content .settings-scroll {
 }
 .stat-value.easy { color: #4CAF50; }    /* зелёный */
 .stat-value.normal { color: #FFC107; }  /* жёлтый */
-.stat-value.hard { color: #FF5722; }    /* оранжевый */
+.stat-value.hard { color: #D32F2F; }    /* оранжевый */
 .stat-value.extreme { color: #E91E63; } /* розово-красный */
+
+.stat-value.tutorial { color: #2196F3; }   /* синий — для новичков */
+.stat-value.advanced { color: #FF5722; }   /* фиолетовый — продвинутая */
+.stat-value.expert { color: #FF9800; }     /* тёмно-жёлтый — экспертная */
+.stat-value.insane { color: #F44336; }     /* красный — безумная */
+
 
 
 .slider-checkbox-row {
@@ -1798,9 +1804,9 @@ const ImageDB = {
 
 
 </script>
-
-
 </script>
+
+
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -1808,6 +1814,7 @@ const ImageDB = {
 
   gtag('config', 'G-PYJ5SM4Z1Y');
 </script>
+
   <script>
     
     const CONFIG = {
@@ -2344,6 +2351,7 @@ let nmaxPairs = Math.max(1, Math.floor(totalCells / Math.max(colorsCount * 2, 1)
       roomLabel.textContent = roomSelector.options[roomSelector.selectedIndex]?.text || '';
     };
   }
+
 }
 
 
@@ -2735,7 +2743,7 @@ updateStats();
         this.useImages = false;
         this.maxColors = Math.min(this.maxColors, this.palette.length);
       }
-      
+
     }
 
 
@@ -4593,7 +4601,13 @@ maxColorsSlider.addEventListener('input', setupPairSlider);
 
   fullscreenSlider.oninput = function () {
     document.getElementById('settings-fullscreen').textContent = this.value == 1 ? 'Включен' : 'Выключен';
+    if (this.value == 1) {
+        enterFullscreen();
+    } else {
+        exitFullscreen();
+    }
   };
+
 
   // Смена темы → пересчёт
   const themeSelector = document.getElementById('theme-selector');
@@ -4895,22 +4909,36 @@ function normalizePairsInput(minPairs) {
 }
 
 // === Оценка сложности (обновлённая) ===
-// === Оценка сложности (обновлённая) ===
 function estimateDifficultyRaw({ width, height, maxColors, minPairs }) {
-  const C = maxColors;
-  const P = minPairs;
   const A = width * height;
 
-  const baseColorsRef = 20;
-  const basePairsRef = 1;
-  const f1 = C / baseColorsRef;                   // влияние количества цветов (чем выше - тем сложнее)
-  const f2 = P / Math.max(1, basePairsRef);       // влияние гарантированных пар
-  const f3 = Math.sqrt(A) / 10;                   // влияние размера поля (10x10 -> 1)
+  // Коэффициент размера — сглаженный
+  const sizeCoef = Math.pow(A / 100, 0.8); // 10x10 → 1.0, 10x20 → ~1.74
 
-  const sum = f1 * 1.0 + f2 * 0.6 + f3 * 1.0;     // веса подобраны эмпирически
-  const D = sum * MODEL.difficultyScale;
-  return Math.min(10, Math.max(1, +(D).toFixed(1)));
+  // Концентрация цветов — чем больше цветов, тем сложнее
+  const colorConcentration = maxColors / Math.sqrt(A); // 10x10: 20/10 = 2.0
+
+  // Вариативность — чем выше, тем больше свободы (легче)
+  const variability = (maxColors / Math.max(1, minPairs)) * Math.sqrt(A / 100);
+  const variabilityCoef = 1 / (1 + variability * 0.1); // мягкое влияние
+
+  // Новое: равномерность пар — больше пар = чуть сложнее
+  //const pairUniformityFactor = 1 + Math.pow(minPairs / 10, 1.1) * 0.25; в основной формуле просто (* minPairs *)
+
+  // Основная формула
+  const raw =
+    (colorConcentration * minPairs * 0.8) /
+    (sizeCoef * variabilityCoef);
+
+  // Масштаб и сглаживание
+  const D = Math.pow(raw, 0.75) * 1.8;
+
+  // ограничение диапазона
+  return Math.min(10, Math.max(1, +D.toFixed(1)));
 }
+
+
+
 
 // Обёртка, принимающая различные форматы
 function estimateDifficulty(settings) {
@@ -4933,7 +4961,10 @@ function estimateVariability({ width, height, maxColors, minPairs }) {
 
 // возвращает Promise<number> — сек.
 // === Модель длительности + использование данных из IndexedDB ===
+// возвращает Promise<number> — сек.
+// === Модель длительности + использование данных из IndexedDB ===
 async function estimateDuration(settings) {
+  // === 0. Подготовка параметров ===
   const size = parseSizeInput(settings.size ?? settings);
   const C = normalizeColorsInput(settings.maxColors ?? settings);
   const P = normalizePairsInput(settings.minPairs ?? settings);
@@ -4945,27 +4976,32 @@ async function estimateDuration(settings) {
   const difficulty = estimateDifficultyRaw({ width: W, height: H, maxColors: C, minPairs: P });
 
   // === 1. Базовая длительность от размера поля ===
-  const base = Math.pow(A, 0.8) * 0.6; // немного сглаженный рост
+  const base = Math.pow(A, 0.8) * 0.6; // сглаженный рост сложности
 
   // === 2. Факторы сложности ===
-  // Количество цветов — усиливаем влияние
-  const colorFactor = 1 + Math.pow(C / 6, 1.25) * 0.2; 
-
-  // Минимум гарантированных пар — чем больше, тем чуть легче
-  const pairsFactor = 1 - 0.15 * Math.log2(1 + P / 10);
-
-  // Вариативность и общая "хаотичность" поля
+  const colorFactor = 1 + Math.pow(C / 6, 1.25) * 0.2;  // больше цветов — дольше
+  const pairsFactor = 1 - 0.15 * Math.log2(1 + P / 10); // больше пар — немного легче
   const variabilityFactor = 1 + (1 / Math.max(1, variability)) * 0.25;
-
-  // Общая вычислительная сложность (эмпирический множитель)
   const difficultyFactor = 1 + Math.min(1.5, difficulty / 4);
 
-  let modelEstimate = base * colorFactor * pairsFactor * variabilityFactor * difficultyFactor;
+  // === Новый коэффициент: просматриваемость поля ===
+  // Чем больше площадь, тем труднее держать в уме всё поле
+  const visibilityCoef = 1 + Math.log2(1 + A / 64) * 0.25; 
+  // 8x8 ≈ 1.1, 16x16 ≈ 1.4, 30x30 ≈ 1.8
 
-  // === 3. Добавляем человеческие когнитивные задержки ===
-  const reactionTime = 1.2;        // 300 мс
-  const thinkingTimePerBlock = 0.048; // 12 мс
-  const blocksProcessedPerMove = Math.round(A * 0.80); // игрок оценивает ~25% поля за ход
+  // Итоговая базовая оценка
+  let modelEstimate = base
+    * colorFactor
+    * pairsFactor
+    * variabilityFactor
+    * difficultyFactor
+    * visibilityCoef;
+
+  // === 3. Когнитивные задержки игрока ===
+  // Здесь 1.2 сек — это совокупное время на одну "операцию восприятия" (4 подоперации × ~0.3 с)
+  const reactionTime = 1.2;          // совокупная реакция (восприятие, поиск и осознание)
+  const thinkingTimePerBlock = 0.048; // 12 мс × 4 когнитивные операции
+  const blocksProcessedPerMove = Math.round(A * 0.80); // игрок оценивает ~80% поля за ход
   const thinkingTime = blocksProcessedPerMove * thinkingTimePerBlock;
 
   const timePerPair = reactionTime + thinkingTime;
@@ -4975,7 +5011,8 @@ async function estimateDuration(settings) {
   modelEstimate += totalActionTime;
 
   // === 4. Коррекция диапазона (в секундах) ===
-  modelEstimate = Math.min(Math.max(modelEstimate, 8), 300);
+  const maxLimit = 300 + Math.sqrt(A) * 10; // адаптивный потолок
+  modelEstimate = Math.min(Math.max(modelEstimate, 8), maxLimit);
   modelEstimate = Math.round(modelEstimate);
 
   // === 5. Коррекция по данным IndexedDB (история прохождений) ===
@@ -4985,7 +5022,7 @@ async function estimateDuration(settings) {
     if (record?.runs?.length > 0) {
       const arr = record.runs.map(r => r.duration).slice(0, 3);
       const avg = Math.round(arr.reduce((s, v) => s + v, 0) / arr.length);
-      const alpha = Math.min(0.75, arr.length / 3 * 0.75);
+      const alpha = Math.min(0.75, (arr.length / 3) * 0.75);
       return Math.round(modelEstimate * (1 - alpha) + avg * alpha);
     }
 
@@ -5009,7 +5046,7 @@ async function estimateDuration(settings) {
       if (top.length > 0) {
         const arr = top.map(x => x.rec.duration);
         const avg = Math.round(arr.reduce((s, v) => s + v, 0) / arr.length);
-        const alpha = Math.min(0.6, top.length / 3 * 0.6);
+        const alpha = Math.min(0.6, (top.length / 3) * 0.6);
         return Math.round(modelEstimate * (1 - alpha) + avg * alpha);
       }
     }
@@ -5020,6 +5057,7 @@ async function estimateDuration(settings) {
 
   return modelEstimate;
 }
+
 
 // === Запись результата прохождения (вызывать при завершении уровня) ===
 async function saveRunResult(settings, durationSeconds) {
@@ -5063,12 +5101,16 @@ function formatTime(seconds) {
 }
 
 
-// === Интерпретация сложности ===
+// === Интерпретация сложности (динамическая шкала) ===
 function getDifficultyLevel(d) {
-  if (d < 3.5) return { name: 'Лёгкая', class: 'easy' };
-  if (d < 6.5) return { name: 'Средняя', class: 'normal' };
-  if (d < 8.5) return { name: 'Сложная', class: 'hard' };
-  return { name: 'Невозможная', class: 'extreme' };
+  if (d < 2.0) return { name: 'Тренировка', class: 'tutorial' };       // для новичков
+  if (d < 4.0) return { name: 'Лёгкая', class: 'easy' };
+  if (d < 6.0) return { name: 'Нормальная', class: 'normal' };
+  if (d < 8.0) return { name: 'Продвинутая', class: 'advanced' };
+  if (d < 10.0) return { name: 'Сложная', class: 'hard' };
+  if (d < 13.0) return { name: 'Экспертная', class: 'expert' };
+  if (d < 16.0) return { name: 'Безумная', class: 'insane' };
+  return { name: 'Невозможная', class: 'extreme' };                    // >16
 }
 
 // === Обновлённая функция updateStats (async) ===
@@ -5641,7 +5683,6 @@ if ("serviceWorker" in navigator) {
 </body>
 
 </html>
-
 
 
 
