@@ -2643,8 +2643,6 @@ updateStats();
 
           const color = this.board[y][x];
           if (color !== null && color !== undefined) {
-            // пока не задаём CSS-переменную --color — клетка остаётся серой,
-            // и у неё data-activated = '0' => переходы/блик будут отключены по CSS
 
             cell.classList.add('filled');
             cell.dataset.colorId = String(color);
@@ -2662,8 +2660,7 @@ updateStats();
         }
       }
 
-      // запуск «включения лампочек»
-      //this.runInitialReveal(2500);
+
               window.hideLoader(() => {
           this.runInitialReveal(2500);
         });
@@ -2824,8 +2821,6 @@ applyImageBackgroundToCell(cell) {
           const progress = Math.min(elapsed / totalMs, 1);
           const targetIndex = Math.floor(progress * (lastIndex + 1));
 
-          // вместо того, чтобы открывать сразу все targetIndex,
-          // откроем только batchSize за кадр
           let processed = 0;
           while (this._revealIndex < targetIndex && processed < batchSize) {
             const { el, colorId } = cellsToReveal[this._revealIndex];
@@ -2898,7 +2893,6 @@ applyImageBackgroundToCell(cell) {
           hintForThisAction = this.superHint;
           // Сбрасываем подсказку и запускаем кулдаун, но не перехватываем действия
           this.clearSuperHint(false);
-          /*this.startHintCooldown();*/ //расход подсказки при клике
         }
         if (this.state.locked) return;
         const color = this.board[y][x];
@@ -2917,14 +2911,11 @@ applyImageBackgroundToCell(cell) {
           // Если стартовали по подсвеченному блоку — обойти режим выбора и удалить супер-пару
           if (hintForThisAction && isHintedStart) {
             const other = (hintForThisAction.a.x === x && hintForThisAction.a.y === y) ? hintForThisAction.b : hintForThisAction.a;
-            // Центрируем все блоки перед удалением супер-пары
-            //this.centerAllBlocks(); ИЗБЫТОЧНО 1509
+
             this.removePair(x, y, other.x, other.y);
             return;
           }
           const boardEl = document.getElementById('board');
-          // Центрируем все блоки перед входом в режим выбора
-          //this.centerAllBlocks(); ИЗБЫТОЧНО 1509
           this.enterSelectionMode(x, y, preCandidates);
           boardEl.classList.add('dimmed');
           return;
@@ -2996,8 +2987,7 @@ applyImageBackgroundToCell(cell) {
         const stepPx = this.drag.stepPx;
 
         if (!axis) {
-          // treat as click - центрируем блоки при клике
-          //this.centerAllBlocks(); ИЗБЫТОЧНО ?? 1509
+
           return;
         }
         const desiredSteps = axis === 'x' ? Math.round(dx / stepPx) : Math.round(dy / stepPx);
@@ -3025,22 +3015,17 @@ applyImageBackgroundToCell(cell) {
           // Восстанавливаем состояние цепочки. (Важно: captureChainSnapshot не должен восстанавливать ячейки, которые
           // намеренно должны исчезнуть — но тут нет найденных кандидатов, так что обычный откат корректен.)
           this.restoreChainSnapshot(snapshot, axis, actualSteps);
-          // Центрируем все блоки после отката
-          //this.centerAllBlocks(); ИЗБЫТОЧНО ?? 1509
+
           return;
         }
-        // Если нашли кандидатов — не откатываем transform: пусть блок останется визуально на месте отпускания.
-        // Затем удаляем пару и плавно убираем их визуально (fade-out).
+
         const scheduleClearPreview = () => {
-          // небольшой таймаут — даём время анимации fade-out выполниться, затем чистим preview transforms.
-          setTimeout(() => {
+          requestAnimationFrame(() => {
             this.clearPreviewTransforms();
-            // также можно принудительно очистить вспомогательные классы
             if (boardEl) boardEl.classList.remove('noreturn');
-            // Центрируем все блоки после очистки preview transforms
-            //this.centerAllBlocks();
-          }, 0);
+          });
         };
+
         // --- 1 кандидат: удаляем напрямую ---
         if (candidates.length === 1) {
           const { x: tx, y: ty } = candidates[0];
@@ -3049,8 +3034,7 @@ applyImageBackgroundToCell(cell) {
 
           this.removePair(nx, ny, tx, ty);
           scheduleClearPreview();
-          // Центрируем все блоки после успешного удаления
-          //setTimeout(() => this.centerAllBlocks(), 100); ИЗБЫТОЧНО ?? 1509
+
           return;
         }
         // --- несколько кандидатов — если тянули, начав с подсказанного блока, удалить супер-пару ---
@@ -3073,15 +3057,13 @@ applyImageBackgroundToCell(cell) {
 
           this.removePair(nx, ny, px, py);
           scheduleClearPreview();
-          // Центрируем все блоки после удаления супер-пары
-          //setTimeout(() => this.centerAllBlocks(), 100); ИЗБЫТОЧНО 1509
+
           return;
         }
         // иначе — режим выбора (selection mode)
         this.enterSelectionMode(nx, ny, candidates);
         if (boardEl) boardEl.classList.add('dimmed');
-        //this.centerAllBlocks(); ИЗБЫТОЧНО
-        // Примечание: в режиме выбора мы оставляем preview-transform, чтобы игрок видел, где он отпустил блок.
+
       }
 
 
@@ -3363,8 +3345,6 @@ applyImageBackgroundToCell(cell) {
         if (performance.now() < this._blockClicksUntil) return;
         const color = this.board[y][x];
         if (color === null) return; 
-        // Центрируем все блоки при клике (на случай если они были слегка сдвинуты)
-        //this.centerAllBlocks(); ИЗБЫТОЧНО ?? 1509
         // Если есть подсказка — мягко сбрасываем (и запускаем кулдаун), но не перехватываем действие
         if (this.superHint) { this.clearSuperHint(false); /*this.startHintCooldown(); расход подсказки при клике*/ }
         // Если ждём выбора среди кандидатов — принимаем клики только по ним
@@ -3382,8 +3362,7 @@ applyImageBackgroundToCell(cell) {
         if (candidates.length === 0) {
           // Подсветить все блоки того же цвета мягким пульсом на 1 секунду
           this.pulseSameColor(x, y);
-          // Центрируем все блоки при пульсации (нет кандидатов)
-          //setTimeout(() => this.centerAllBlocks(), 100); ИЗБЫТОЧНО ?? 1509
+
           return;
         }
         if (candidates.length === 1) {
@@ -3393,8 +3372,6 @@ applyImageBackgroundToCell(cell) {
         }
         // Несколько совпадений — если кликнули по блоку, который был в подсказке (и мы её только что сбросили), удалить супер-пару
         if (!this.superHint && this._hintCooldownUntil > performance.now()) {
-          // мы знаем, что подсказка только что была активна; проверим, было ли начало на одном из её блоков
-          // к сожалению, к этому моменту мы не знаем предыдущую пару, поэтому этот путь обрабатывается в onPointerDown
         }
         // Обычный режим выбора
         this.enterSelectionMode(x, y, candidates);
@@ -3458,7 +3435,7 @@ applyImageBackgroundToCell(cell) {
         this.state.source = null;
         this.state.candidates = [];
         this.updateHintButtonState();
-        //this.centerAllBlocks(); ИЗБЫТОЧНО ??? 1509
+
       }
       // === Удаление пары ===
       removePair(x1, y1, x2, y2) {
@@ -3508,11 +3485,7 @@ applyImageBackgroundToCell(cell) {
         this.maxColors = Math.min(this.maxColors, this.theme.length);
         this.board = this.generateBoard();
         this.mount();
-        // Центрируем все блоки после перезапуска //ЗАКОММЕНТИРОВАНО ДЛЯ ТЕСТИРОВАНИЯ ОПТИМИЗАЦИИ НАГРУЗКИ
-        //setTimeout(() => this.centerAllBlocks(), 100);
-        //setTimeout(() => this.checkAndReshuffleIfNoMoves(), 50);
-        //setTimeout(() => this.updateSettingsDisplay(), 300);
-        
+
         saveGameData();
       }
 
@@ -4961,8 +4934,6 @@ function estimateVariability({ width, height, maxColors, minPairs }) {
 
 // возвращает Promise<number> — сек.
 // === Модель длительности + использование данных из IndexedDB ===
-// возвращает Promise<number> — сек.
-// === Модель длительности + использование данных из IndexedDB ===
 async function estimateDuration(settings) {
   // === 0. Подготовка параметров ===
   const size = parseSizeInput(settings.size ?? settings);
@@ -5082,10 +5053,7 @@ async function saveRunResult(settings, durationSeconds) {
     // Обрезаем recentRuns до лимита
     const all = await dbGetAll('recentRuns');
     if (all.length > MODEL.recentRunsLimit) {
-      // удаляем самые старые — делаем это грубо: читаем все и удаляем (можно оптимизировать)
-      // здесь удаление по ключам не реализовано — простая стратегия: реинициализируем store (удаление старого DB) не желает. 
-      // Простая корректировка: удаляем первые N по cursor (реализовать, если нужно).
-      // Для простоты пока ничего не делаем — recentRuns лимит служит предупреждением.
+
     }
   } catch (err) {
     console.warn('saveRunResult error', err);
